@@ -1,0 +1,1 @@
+-define(SESSION_AGE, 1200).

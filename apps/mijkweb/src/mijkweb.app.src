@@ -1,12 +1,22 @@
 {application, mijkweb,
  [
-  {description, ""},
+  {description, "another cluster web app"},
   {vsn, "1"},
   {registered, []},
   {applications, [
                   kernel,
-                  stdlib
+                  stdlib,
+                  sasl,
+                  lager,
+                  cowboy,
+                  crypto,
+                  public_key,
+                  ssl,
+                  mnesia
                  ]},
   {mod, { mijkweb_app, []}},
-  {env, []}
+  {env, [
+    {distribute_mode, "single"},
+    {master_node, "self"}
+  ]}
  ]}.

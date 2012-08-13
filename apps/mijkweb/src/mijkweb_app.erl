@@ -18,6 +18,9 @@ start(_StartType, _StartArgs) ->
        cowboy_tcp_transport, [{port, 8080}],
        cowboy_http_protocol, [{dispatch, Dispatch}]
     ),
+    mijk_session:init(),
+    timer:start(),
+    mijk_session:clean_up_sessions_job(),
     mijkweb_sup:start_link().
 
 stop(_State) ->
