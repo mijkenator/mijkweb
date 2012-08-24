@@ -26,6 +26,10 @@ handle(#http_req{method=Method, raw_path=RPath} = Req, State) ->
 terminate(_Req, _State) ->
     ok.
 
+%
+%Dirty version. try to det session cookie, if not create one. Update sessions expiration date
+%
+-spec dirty_get_session_header(#http_req{}) -> kvlist().
 dirty_get_session_header(Req) ->
     case cowboy_http_req:cookie(<<"MIJKSSID">>, Req, undefined) of
         {undefined, _} ->
@@ -42,7 +46,11 @@ dirty_get_session_header(Req) ->
                 ;_ -> [cowboy_cookies:cookie(<<"MIJKSSID">>, mijk_session:create_session(1),[{max_age, ?SESSION_AGE}])]
             end
     end.
-
+    
+%
+%try to det session cookie, if not create one. Update sessions expiration date
+%
+-spec get_session_header(#http_req{}) -> kvlist().
 get_session_header(Req) ->
     case cowboy_http_req:cookie(<<"MIJKSSID">>, Req, undefined) of
         {undefined, _} ->

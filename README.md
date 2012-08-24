@@ -12,3 +12,5 @@ distributed master-master mnesia
 - delete mnesia node
 
 3-7% loaded when idle, why ??? -> etop
+
+dialyzer

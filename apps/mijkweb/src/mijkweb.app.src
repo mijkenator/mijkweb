@@ -12,7 +12,8 @@
                   crypto,
                   public_key,
                   ssl,
-                  mnesia
+                  mnesia,
+                  emysql
                  ]},
   {mod, { mijkweb_app, []}},
   {env, [

@@ -3,10 +3,13 @@
             init/0,
             init_single/0,
             init_multinode/1,
+            init/1,
             check_session/1,
             update_session/2,
             clean_up_sessions/0,
             clean_up_sessions_job/0,
+            clean_up_sessions/1,
+            clean_up_sessions_job/1,
             generate_session_uuid/0, generate_session_uuid/1,
             init_session/1,
             select/1,
@@ -14,14 +17,28 @@
             get_session_data/1,
             check_session_data/1,
             dirty_check_session_data/1,
-            dirty_update_session/2
+            dirty_update_session/2,
+            clean_up_sessions_job_inner/0,
+            mysql_check_session_data/1,
+            mysql_update_session/2
         ]).
 
 -include("include/consts.hrl").
+-include("../../deps/emysql/include/emysql.hrl").
 
-init() ->
-    case application:get_key(mijkweb, distribute_mode) of
-        {ok, "multinode"} -> init_multinode(application:get_key(mijkweb, master_node))
+init() -> init("mnesia").
+
+init("mysql")  ->
+    emysql:execute(sessionpool, <<"create table IF NOT EXISTS mijkweb_session (
+        guid varchar(50) not null,
+        exp_date timestamp not null default now(),
+        session_data blob default null,
+        PRIMARY KEY(guid),
+        key (exp_date)
+        ) ENGINE InnoDB DEFAULT CHARACTER SET = utf8;">>);
+init("mnesia") ->
+    case application:get_env(mijkweb, distribute_mode) of
+        {ok, "multinode"} -> init_multinode(application:get_env(mijkweb, master_node))
         ;_                -> init_single()
     end.
     
@@ -32,13 +49,15 @@ init_multinode({ok, Node}) when is_atom(Node)
     case mnesia:table_info(schema, disc_copies) of
         []                ->
             rpc:call(Node, mnesia, change_config, [extra_db_nodes, [node()]]),
-            mnesia:change_table_copy_type(schema, node(), disc_copies);
+            mnesia:change_table_copy_type(schema, node(), disc_copies),
+            mnesia:add_table_copy(mijk_session, node(), ram_copies);
         L when is_list(L) ->
             case lists:member(node(), L) of
                 true  -> ok;
                 false ->
                     rpc:call(Node, mnesia, change_config, [extra_db_nodes, [node()]]),
-                    mnesia:change_table_copy_type(schema, node(), disc_copies)
+                    mnesia:change_table_copy_type(schema, node(), disc_copies),
+                    mnesia:add_table_copy(mijk_session, node(), ram_copies)
             end
     end;
 init_multinode(_)               -> init_single().
@@ -129,6 +148,27 @@ dirty_check_session_data(SessionID) ->
               {ok, SessionData}
         ;_ -> nok
     end.
+
+%
+%
+%
+-spec mysql_check_session_data(binary()) -> nok | {ok, list()}.
+mysql_check_session_data(SessionID) ->
+    emysql:prepare(get_sessions, <<"select session_data from mijkweb_session where guid = ?">>),
+    emysql:prepare(update_s_expdate, <<"update mijkweb_session set exp_date = NOW() where guid = ?">>),
+    case emysql:execute(sessionpool, get_sessions, [SessionID]) of
+        #result_packet{rows=[]}         -> nok;
+        #result_packet{rows=[[S_Data]]} -> emysql:execute(sessionpool, update_s_expdate, [SessionID]), {ok, S_Data}
+    end.
+
+%
+%
+%
+-spec mysql_update_session(binary(), list()) -> ok | nok.
+mysql_update_session(SessionID, SessionData) ->
+    emysql:prepare(update_s_update, <<"update mijkweb_session set session_data = ? where guid = ?">>),
+    emysql:execute(sessionpool, update_s_update, [term_to_binary(SessionData), SessionID]),
+    ok.
     
 %
 %
@@ -178,19 +218,54 @@ clean_up_sessions() ->
         ;_         -> nok
     end,
     ok.
+
+%
+%
+%
+-spec clean_up_sessions(list()) -> ok.
+clean_up_sessions("mysql") ->
+    emysql:prepare(clean_sessions, <<"delete from mijkweb_session where exp_date < DATE_SUB(NOW(), INTERVAL ? MINUTE )">>),
+    emysql:execute(sessionpool, clean_sessions, [?SESSION_AGE/60]),
+    ok.
+
+%
+% 
+%
+-spec clean_up_sessions_job(list()) -> ok.
+clean_up_sessions_job("mysql") ->
+    lager:debug("clean_up_sessions_job started", []),
+    try clean_up_sessions("mysql") of
+        ok  -> ok
+    catch
+        E:R -> lager:error("clean up sessions error: ~p ~p ~n", [E, R])
+    end,
+    timer:apply_after(300000, mijk_session, clean_up_sessions_job, []),
+    ok.
     
 %
-%
+% should work only on master node
 %
 -spec clean_up_sessions_job() -> ok.
 clean_up_sessions_job() ->
+    case {application:get_env(mijkweb, distribute_mode), application:get_env(mijkweb, master_node)} of
+        {{ok, "single"}, _}               -> mijk_session:clean_up_sessions_job_inner();
+        {{ok, "multinode"}, {ok, "self"}} -> mijk_session:clean_up_sessions_job_inner();
+        {{ok, "multinode"}, {ok, Node}} when Node=:=node() -> mijk_session:clean_up_sessions_job_inner()
+        ;_ -> lager:warning("clean_up_sessions_job not eligible for this nofe; ~p ", [node()])
+    end.
+    
+%
+% 
+%
+-spec clean_up_sessions_job_inner() -> ok.
+clean_up_sessions_job_inner() ->    
     lager:debug("clean_up_sessions_job started", []),
     try mijk_session:clean_up_sessions() of
         ok  -> ok
     catch
         E:R -> lager:error("clean up sessions error: ~p ~p ~n", [E, R])
     end,
-    timer:apply_after(600000, mijk_session, clean_up_sessions_job, []),
+    timer:apply_after(300000, mijk_session, clean_up_sessions_job, []),
     ok.
 %
 %
