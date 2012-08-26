@@ -10,17 +10,17 @@
   <!-- Server side setup -->
   <servers>
     <server host="localhost" port="8080" type="tcp"></server>
-    <server host="localhost" port="8081" type="tcp"></server>
+    <server host="localhost" port="8080" type="tcp"></server>
   </servers>
 
 
   
-  <load duration="30" unit="minute">
+  <load duration="60" unit="minute">
   <!-- several arrival phases can be set: for each phase, you can set
   the mean inter-arrival time between new clients and the phase
   duration -->
-   <arrivalphase phase="1" duration="30" unit="minute">
-     <users arrivalrate="2" unit="second"></users>
+   <arrivalphase phase="1" duration="60" unit="minute">
+     <users arrivalrate="5" unit="second"></users>
    </arrivalphase>
   </load>
 

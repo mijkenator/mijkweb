@@ -1,4 +1,4 @@
--module(mijkweb_app).
+-module(mijkweb_app).   
 
 -behaviour(application).
 
@@ -22,6 +22,7 @@ start(_StartType, _StartArgs) ->
     timer:start(),
     mijk_session:clean_up_sessions_job(),
     emysql:add_pool(sessionpool, 100, "mijkweb", "mijkweb", "localhost", 3306, "mijkweb", utf8),
+    mijk_session:clean_up_sessions_job("mysql"),
     mijkweb_sup:start_link().
 
 stop(_State) ->

@@ -20,7 +20,13 @@
             dirty_update_session/2,
             clean_up_sessions_job_inner/0,
             mysql_check_session_data/1,
-            mysql_update_session/2
+            mysql_update_session/2,
+            dirty_init_session/1,
+            mysql_init_session/1,
+            dirty_create_session/1,
+            mysql_create_session/1,
+            mysql_to_erl/1,
+            erl_to_mysql/1
         ]).
 
 -include("include/consts.hrl").
@@ -95,9 +101,15 @@ create_session_table() ->
 
 init_session(SSID) ->
     {Ms, Ss, _} = now(),
-    %mnesia:dirty_write(mijk_session, {mijk_session, SSID, 1000000*Ms +Ss, []}).
     mnesia:transaction(fun()-> mnesia:write({mijk_session, SSID, 1000000*Ms +Ss, []}) end).
-    
+
+dirty_init_session(SSID) ->
+    {Ms, Ss, _} = now(),
+    mnesia:dirty_write(mijk_session, {mijk_session, SSID, 1000000*Ms +Ss, []}).
+
+mysql_init_session(SSID) ->
+    emysql:execute(sessionpool, <<"insert into mijkweb_session values ('", SSID/binary, "', NOW(), NULL)">>).
+
 select(all) ->
     mnesia:transaction(fun()-> mnesia:select(mijk_session, [{{mijk_session,'$1','$2','$3'}, [], ['$_']}]) end).
 %-------------------------------------------------------------------------------
@@ -109,6 +121,23 @@ select(all) ->
 create_session(Type) ->
     SSID = generate_session_uuid(Type),
     init_session(SSID), SSID.
+
+%
+%dirty version
+%
+-spec dirty_create_session(integer()) -> binary().
+dirty_create_session(Type) ->
+    SSID = generate_session_uuid(Type),
+    dirty_init_session(SSID), SSID.
+
+%
+%mysql version
+%
+-spec mysql_create_session(integer()) -> binary().
+mysql_create_session(Type) ->
+    SSID = generate_session_uuid(Type),
+    mysql_init_session(SSID), SSID.
+
 
 %
 %
@@ -167,7 +196,7 @@ mysql_check_session_data(SessionID) ->
 -spec mysql_update_session(binary(), list()) -> ok | nok.
 mysql_update_session(SessionID, SessionData) ->
     emysql:prepare(update_s_update, <<"update mijkweb_session set session_data = ? where guid = ?">>),
-    emysql:execute(sessionpool, update_s_update, [term_to_binary(SessionData), SessionID]),
+    emysql:execute(sessionpool, update_s_update, [erl_to_mysql(SessionData), SessionID]),
     ok.
     
 %
@@ -225,7 +254,7 @@ clean_up_sessions() ->
 -spec clean_up_sessions(list()) -> ok.
 clean_up_sessions("mysql") ->
     emysql:prepare(clean_sessions, <<"delete from mijkweb_session where exp_date < DATE_SUB(NOW(), INTERVAL ? MINUTE )">>),
-    emysql:execute(sessionpool, clean_sessions, [?SESSION_AGE/60]),
+    emysql:execute(sessionpool, clean_sessions, [round(?SESSION_AGE/60)]),
     ok.
 
 %
@@ -239,7 +268,7 @@ clean_up_sessions_job("mysql") ->
     catch
         E:R -> lager:error("clean up sessions error: ~p ~p ~n", [E, R])
     end,
-    timer:apply_after(300000, mijk_session, clean_up_sessions_job, []),
+    timer:apply_after(300000, mijk_session, clean_up_sessions_job, ["mysql"]),
     ok.
     
 %
@@ -267,6 +296,14 @@ clean_up_sessions_job_inner() ->
     end,
     timer:apply_after(300000, mijk_session, clean_up_sessions_job, []),
     ok.
+
+%
+%
+%
+erl_to_mysql(Term) -> base64:encode(term_to_binary(Term)).
+
+mysql_to_erl(Bin)  -> binary_to_term(base64:decode(Bin)).
+
 %
 %
 %
