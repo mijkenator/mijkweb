@@ -17,7 +17,7 @@
                  ]},
   {mod, { mijkweb_app, []}},
   {env, [
-    {distribute_mode, "single"},
-    {master_node, "self"}
+    {distribute_mode, "multinode"},
+    {master_node, 'mijkweb@192.168.1.8'}
   ]}
  ]}.

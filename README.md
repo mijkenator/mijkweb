@@ -10,6 +10,9 @@ TODO
 distributed master-master mnesia
 - add mnesia node
 - delete mnesia node
+- mysql
+- memcachedb
+- wired distributed test with mnesia on 2 nodes
 
 3-7% loaded when idle, why ??? -> etop
 
