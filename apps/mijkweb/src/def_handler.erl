@@ -27,7 +27,27 @@ handle(#http_req{method=Method, raw_path=RPath} = Req, State) ->
 terminate(_Req, _State) ->
     ok.
 
-
+%
+%Memcached version. try to det session cookie, if not create one. Update sessions expiration date
+%
+-spec mcache_get_session_header(#http_req{}) -> kvlist().
+mcache_get_session_header(Req) ->
+    case cowboy_http_req:cookie(<<"MIJKSSID">>, Req, undefined) of
+        {undefined, _} ->
+            [cowboy_cookies:cookie(<<"MIJKSSID">>, mijk_session:mcache_create_session(1),[{max_age, ?SESSION_AGE}])];
+        {SSID, _}      ->
+            case mijk_session:mcache_check_session_data(SSID) of
+                {ok, Data} when is_binary(Data) ->
+                    EData = mijk_session:mysql_to_erl(Data),
+                    NewData = case proplists:get_value(<<"counter">>, EData, undefined) of
+                        undefined            -> [{<<"counter">>, 1}] ++ EData;
+                        V when is_integer(V) -> lists:keyreplace(<<"counter">>, 1, EData, {<<"counter">>, V+1})
+                    end,
+                    mijk_session:mcache_update_session(SSID, NewData),
+                    [cowboy_cookies:cookie(<<"MIJKSSID">>, SSID,[{max_age, ?SESSION_AGE}])]
+                ;_ -> [cowboy_cookies:cookie(<<"MIJKSSID">>, mijk_session:mcache_create_session(1),[{max_age, ?SESSION_AGE}])]
+            end
+    end.
 
 %
 %Mysql version. try to det session cookie, if not create one. Update sessions expiration date

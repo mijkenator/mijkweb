@@ -17,7 +17,18 @@
                  ]},
   {mod, { mijkweb_app, []}},
   {env, [
-    {distribute_mode, "multinode"},
-    {master_node, 'mijkweb@192.168.1.8'}
+    %{distribute_mode, "multinode"},
+    %{master_node, 'mijkweb@192.168.1.8'}
+    {distribute_mode, "single"},
+    {master_node, "self"},
+    {session_storage, "mnesia"}, %mnesia|mysql|memcached
+    {mysql_db_config, [
+     {"user", "mijkweb"},
+     {"password", "mijkweb"},
+     {"database", "mijkweb"},
+     {"host", "localhost"},
+     {"port", 3306},
+     {"processes", 100}
+    ]}
   ]}
  ]}.

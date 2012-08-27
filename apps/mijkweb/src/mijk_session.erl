@@ -21,10 +21,13 @@
             clean_up_sessions_job_inner/0,
             mysql_check_session_data/1,
             mysql_update_session/2,
+            mcache_check_session_data/1,
             dirty_init_session/1,
             mysql_init_session/1,
+            mcache_init_session/1,
             dirty_create_session/1,
             mysql_create_session/1,
+            mcache_create_session/1,
             mysql_to_erl/1,
             erl_to_mysql/1
         ]).
@@ -32,9 +35,31 @@
 -include("include/consts.hrl").
 -include("../../deps/emysql/include/emysql.hrl").
 
-init() -> init("mnesia").
+init() ->
+    timer:start(),
+    case application:get_env(mijkweb, session_storage) of
+        {ok, "mysql"}      ->
+            case application:get_env(mijkweb, mysql_db_config) of
+                {ok, [_|_] = L} ->
+                    emysql:add_pool(sessionpool,
+                        proplists:get_value("processes", L, 100),
+                        proplists:get_value("user", L, "mijkweb"),
+                        proplists:get_value("password", L, "mijkweb"),
+                        proplists:get_value("host", L, "localhost"),
+                        proplists:get_value("port", L, 3306),
+                        proplists:get_value("database", L, "mijkweb"), utf8),
+                        init("mysql"),
+                        mijk_session:clean_up_sessions_job("mysql")
+                ;_              -> exit("No mysql connection config")
+            end
+        {ok, "memcached"} -> exit("memcached: not implemented");
+        _                  ->
+            init("mnesia"),
+            mijk_session:clean_up_sessions_job()
+    end.
 
-init("mysql")  ->
+init("memcached") -> mcache:start();
+init("mysql")     ->
     emysql:execute(sessionpool, <<"create table IF NOT EXISTS mijkweb_session (
         guid varchar(50) not null,
         exp_date timestamp not null default now(),
@@ -42,7 +67,7 @@ init("mysql")  ->
         PRIMARY KEY(guid),
         key (exp_date)
         ) ENGINE InnoDB DEFAULT CHARACTER SET = utf8;">>);
-init("mnesia") ->
+init("mnesia")    ->
     case application:get_env(mijkweb, distribute_mode) of
         {ok, "multinode"} -> init_multinode(application:get_env(mijkweb, master_node))
         ;_                -> init_single()
@@ -99,16 +124,23 @@ create_session_table() ->
         {ram_copies, [node()]},{disc_copies, []},{index, [expiration_date]},
         {attributes, [session_id, expiration_date, session_data]}]).
 
+-spec init_session(binary()) -> any().
 init_session(SSID) ->
     {Ms, Ss, _} = now(),
     mnesia:transaction(fun()-> mnesia:write({mijk_session, SSID, 1000000*Ms +Ss, []}) end).
 
+-spec dirty_init_session(binary()) -> any().
 dirty_init_session(SSID) ->
     {Ms, Ss, _} = now(),
     mnesia:dirty_write(mijk_session, {mijk_session, SSID, 1000000*Ms +Ss, []}).
 
+-spec mysql_init_session(binary()) -> any().
 mysql_init_session(SSID) ->
     emysql:execute(sessionpool, <<"insert into mijkweb_session values ('", SSID/binary, "', NOW(), NULL)">>).
+    
+-spec mcache_init_session(binary()) -> any().    
+mcache_init_session(SSID) ->
+    mcache:set(<<"mijkweb">>, SSID, erl_to_mysql([]), raw, {?SESSION_AGE, seconds}).
 
 select(all) ->
     mnesia:transaction(fun()-> mnesia:select(mijk_session, [{{mijk_session,'$1','$2','$3'}, [], ['$_']}]) end).
@@ -138,6 +170,13 @@ mysql_create_session(Type) ->
     SSID = generate_session_uuid(Type),
     mysql_init_session(SSID), SSID.
 
+%
+%mcache version
+%
+-spec mcache_create_session(integer()) -> binary().
+mcache_create_session(Type) ->
+    SSID = generate_session_uuid(Type),
+    mcache_init_session(SSID), SSID.
 
 %
 %
@@ -189,6 +228,16 @@ mysql_check_session_data(SessionID) ->
         #result_packet{rows=[]}         -> nok;
         #result_packet{rows=[[S_Data]]} -> emysql:execute(sessionpool, update_s_expdate, [SessionID]), {ok, S_Data}
     end.
+
+%
+%
+%
+-spec mcache_check_session_data(binary()) -> nok | {ok, list()}.
+mcache_check_session_data(SessionID) ->
+    case mcache:get(<<"mijkweb">>, SessionID) of
+    
+    end.
+
 
 %
 %
