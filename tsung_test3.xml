@@ -11,6 +11,10 @@
   <servers>
     <server host="localhost" port="8080" type="tcp"></server>
   </servers>
+  
+  <monitoring>
+    <monitor host="localhost" type="erlang"/>
+  </monitoring>
 
 
   

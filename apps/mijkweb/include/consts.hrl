@@ -3,3 +3,4 @@
 -type kvlist() :: [kv()].
 
 -define(SESSION_AGE, 1200).
+-define(SHARD_COUNT, 10).

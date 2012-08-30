@@ -22,6 +22,7 @@
             mysql_check_session_data/1,
             mysql_update_session/2,
             mcache_check_session_data/1,
+            mcache_update_session/2,
             dirty_init_session/1,
             mysql_init_session/1,
             mcache_init_session/1,
@@ -51,9 +52,9 @@ init() ->
                         init("mysql"),
                         mijk_session:clean_up_sessions_job("mysql")
                 ;_              -> exit("No mysql connection config")
-            end
-        {ok, "memcached"} -> exit("memcached: not implemented");
-        _                  ->
+            end;
+        {ok, "memcached"} -> init("memcached");
+        _                 ->
             init("mnesia"),
             mijk_session:clean_up_sessions_job()
     end.
@@ -235,10 +236,19 @@ mysql_check_session_data(SessionID) ->
 -spec mcache_check_session_data(binary()) -> nok | {ok, list()}.
 mcache_check_session_data(SessionID) ->
     case mcache:get(<<"mijkweb">>, SessionID) of
-    
+        B when is_binary(B) -> {ok, B}
+        ;_                  -> nok
     end.
-
-
+    
+%
+%
+%
+-spec mcache_update_session(binary(), list()) -> ok | nok.
+mcache_update_session(SessionID, SessionData) ->
+    lager:debug("MUS-> ~p ~p ~n", [SessionData, SessionData]),
+    mcache:set(<<"mijkweb">>, SessionID, erl_to_mysql(SessionData), raw, {?SESSION_AGE, seconds}),
+    ok.
+    
 %
 %
 %
@@ -361,3 +371,16 @@ generate_session_uuid() -> list_to_binary(integer_to_list(random:uniform(1000000
  
 -spec generate_session_uuid(integer()) -> binary().
 generate_session_uuid(1) -> list_to_binary(uuid:to_string(uuid:uuid4())).
+
+get_instance(SessionID) -> get_instance_ip(erlang:crc32(SessionID) rem ?SHARD_COUNT).
+
+%get_instance_ip(0) ->
+%get_instance_ip(1) ->
+%get_instance_ip(2) ->
+%get_instance_ip(3) ->
+%get_instance_ip(4) ->
+%get_instance_ip(5) ->
+%get_instance_ip(6) ->
+%get_instance_ip(7) ->
+%get_instance_ip(8) ->
+%get_instance_ip(9) ->

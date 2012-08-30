@@ -21,7 +21,7 @@
     %{master_node, 'mijkweb@192.168.1.8'}
     {distribute_mode, "single"},
     {master_node, "self"},
-    {session_storage, "mnesia"}, %mnesia|mysql|memcached
+    {session_storage, "memcached"}, %mnesia|mysql|memcached
     {mysql_db_config, [
      {"user", "mijkweb"},
      {"password", "mijkweb"},
