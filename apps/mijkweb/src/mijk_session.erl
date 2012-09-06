@@ -30,7 +30,9 @@
             mysql_create_session/1,
             mcache_create_session/1,
             mysql_to_erl/1,
-            erl_to_mysql/1
+            erl_to_mysql/1,
+            get_instance/1,
+            get_instance_cut/1
         ]).
 
 -include("include/consts.hrl").
@@ -372,15 +374,23 @@ generate_session_uuid() -> list_to_binary(integer_to_list(random:uniform(1000000
 -spec generate_session_uuid(integer()) -> binary().
 generate_session_uuid(1) -> list_to_binary(uuid:to_string(uuid:uuid4())).
 
+%
+% also we can include instance number in session guid: GUID_DDD (DDD -> 000-999 instance number)
+%
+-spec get_instance(binary()) -> list().
 get_instance(SessionID) -> get_instance_ip(erlang:crc32(SessionID) rem ?SHARD_COUNT).
 
-%get_instance_ip(0) ->
-%get_instance_ip(1) ->
-%get_instance_ip(2) ->
-%get_instance_ip(3) ->
-%get_instance_ip(4) ->
-%get_instance_ip(5) ->
-%get_instance_ip(6) ->
-%get_instance_ip(7) ->
-%get_instance_ip(8) ->
-%get_instance_ip(9) ->
+-spec get_instance_ip(integer()) -> list().
+get_instance_ip(0) -> test1;
+get_instance_ip(1) -> test1;
+get_instance_ip(2) -> test1;
+get_instance_ip(3) -> test2;
+get_instance_ip(4) -> test2;
+get_instance_ip(5) -> test2;
+get_instance_ip(6) -> test2;
+get_instance_ip(7) -> test3;
+get_instance_ip(8) -> test3;
+get_instance_ip(9) -> test3;
+get_instance_ip(_) -> generic.
+
+get_instance_cut(<<_:37/bytes, Inst/binary>>) -> get_instance_ip(list_to_integer(binary_to_list(Inst))).
