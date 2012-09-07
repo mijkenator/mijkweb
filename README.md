@@ -16,4 +16,12 @@ distributed master-master mnesia
 
 3-7% loaded when idle, why ??? -> etop
 
-dialyzer
+- dialyzer
+
+- quick sessions
+- and slow (transaction) sessions
+- test: choose memcached instance by function and by gen_server, autogen module
+- page without sessions at all
+- page with quick session
+- page with quick and slow sessions
+- inheritance this behaviours (parse transform, annotations, ....)

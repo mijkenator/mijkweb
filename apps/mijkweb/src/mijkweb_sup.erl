@@ -24,5 +24,12 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, []} }.
+    MSM = {mijk_session_manager,
+                {mijk_session_manager, start_link, []},
+                permanent,                           % Restart  = permanent | transient | temporary
+                2000,                                % Shutdown = brutal_kill | int() >= 0 | infinity
+                worker,                              % Type     = worker | supervisor
+                [mijk_session_manager]               % Modules  = [Module] | dynamic
+        },
+    {ok, { {one_for_one, 5, 10}, [ MSM ]} }.
 

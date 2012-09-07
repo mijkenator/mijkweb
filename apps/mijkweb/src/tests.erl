@@ -6,7 +6,12 @@
     guid_generation/1,
     get_instance/1,
     gi_crc/1,
-    gi_cut/1
+    gi_cut/1,
+    
+    get_inst1/0,
+    get_inst2/0,
+    get_inst1_i/1,
+    get_inst2_i/1
 ]).
 
 
@@ -37,3 +42,17 @@ gen_uuid4(N) when is_integer(N),N>0 -> mijk_session:generate_session_uuid(1), ge
 
 gen_uuid_rnd(0) -> ok;
 gen_uuid_rnd(N) when is_integer(N),N>0 -> mijk_session:generate_session_uuid(), gen_uuid_rnd(N-1).
+
+get_inst1() ->
+    mijk_session_manager:update_mc_pools([test1, test2, test3, test4, test5]),
+    test("get_inst1 -> ", fun()-> tests:get_inst1_i(1000000) end).
+get_inst2() ->
+    mijk_session_manager:update_mc_pools([test1, test2, test3, test4, test5]),
+    test("get_inst2 -> ", fun()-> tests:get_inst2_i(1000000) end).
+
+get_inst1_i(0) -> ok;
+get_inst1_i(N) -> mijk_session_manager:get_instance(mijk_session:generate_session_uuid(1)), get_inst1_i(N-1).
+
+get_inst2_i(0) -> ok;
+get_inst2_i(N) -> mijk_session_manager:get_instance(mijk_session:generate_session_uuid(1), 5), get_inst2_i(N-1).
+

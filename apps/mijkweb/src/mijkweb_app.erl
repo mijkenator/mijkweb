@@ -11,8 +11,13 @@
 
 start(_StartType, _StartArgs) ->
     Dispatch = [
-        %% {Host, list({Path, Handler, Opts})}
-       {'_', [{'_', def_handler, []}]}
+    %% {Host, list({Path, Handler, Opts})}
+       {'_', [
+        {'/test1', no_session_handler, []},
+        {'/test2', quick_session_handler, []},
+        {'/test3', full_session_handler, []},
+        {'_', def_handler, []}
+       ]}
     ],
     cowboy:start_listener(my_http_listener, 100,
        cowboy_tcp_transport, [{port, 8080}],
