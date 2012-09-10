@@ -12,6 +12,8 @@ distributed master-master mnesia
 - delete mnesia node
 - mysql
 - memcachedb
+- membase
+- redis
 - wired distributed test with mnesia on 2 nodes
 
 3-7% loaded when idle, why ??? -> etop
@@ -25,3 +27,5 @@ distributed master-master mnesia
 - page with quick session
 - page with quick and slow sessions
 - inheritance this behaviours (parse transform, annotations, ....)
+- emakefile for updates
+- script wrapper for start,stop,attach ... + activation 15B01 kerl evm
