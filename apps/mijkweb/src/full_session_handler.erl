@@ -19,7 +19,7 @@ init({tcp, http}, Req, _Opts) ->
 
 handle(#http_req{method=Method, raw_path=RPath} = Req, State) ->
     Headers = ?MODULE:mcache_get_session_header(Req),
-    lager:debug("REQ: ~p -> ~p ~n", [Method, RPath]),
+    lager:debug("REQ(fsh): ~p -> ~p ~n", [Method, RPath]),
     IpS = list_to_binary(io_lib:format("~p", [inet:getifaddrs()])), 
     {ok, Req2} = cowboy_http_req:reply(200, Headers, <<"Kolobok alive!\n<br>", IpS/binary>>, Req),
     {ok, Req2, State}.
@@ -30,6 +30,7 @@ terminate(_Req, _State) ->
 
 -spec mcache_get_session_header(#http_req{}) -> kvlist().
 mcache_get_session_header(Req) ->
+    lager:debug("COOKIE ~p ~n", [cowboy_http_req:cookie(<<"MIJKSSID">>, Req, undefined)]),
     case cowboy_http_req:cookie(<<"MIJKSSID">>, Req, undefined) of
         {undefined, _} ->
             [cowboy_cookies:cookie(<<"MIJKSSID">>, mijk_session:mcache_create_session(1),[{max_age, ?SESSION_AGE}])];

@@ -23,6 +23,8 @@
             mysql_update_session/2,
             mcache_check_session_data/1,
             mcache_check_session_data_lock/1,
+            mcache_check_session_data_lock/2,
+            mcache_update_session_lock/2,
             mcache_update_session/2,
             dirty_init_session/1,
             mysql_init_session/1,
@@ -252,15 +254,15 @@ mcache_check_session_data(SessionID) ->
 -spec mcache_check_session_data_lock(binary()) -> nok | {ok, list()}.
 mcache_check_session_data_lock(SessionID) ->
     {Ms,S,_} = now(),
-    case mcache:set(<<"mijkweb">>, <<"lock-", SessionID/binary>>, erl_to_mysql([]), raw, {?LOCK_AGE, seconds}, add) of
+    case mcache:set(<<"mijkweb">>, <<"lock-", SessionID/binary>>, erl_to_mysql([]), raw, {?MC_LOCK_AGE, seconds}, add) of
         {mc_async,0,ok} ->
             case ?MODULE:mcache_check_session_data(SessionID) of
-                {ok, B} -> {ok, B}
+                {ok, B} -> {ok, B};
                 nok     -> ?MODULE:mcache_delete_lock(SessionID), nok
             end;
         {mc_async,0,{error,<<"CONNECTION DATA EXISTS">>}} -> %locked by another process, wait
             lager:warning("session locked: ~p", [SessionID]),
-            timer:sleep(?LOCK_SLEEP),
+            timer:sleep(?MC_LOCK_SLEEP),
             ?MODULE:mcache_check_session_data_lock(SessionID, Ms*1000000+S)
     end.
 %
@@ -269,22 +271,22 @@ mcache_check_session_data_lock(SessionID) ->
 -spec mcache_check_session_data_lock(binary(), integer()) -> nok | {ok, list()}.
 mcache_check_session_data_lock(SessionID, Time) ->    
     {Ms,S,_} = now(),
-    if   Ms*1000000+S-Time > ?LOCK_TIMEOUT ->
-            lager:warning("session ~p, lock timeout ~p", [SessionID, ?LOCK_TIMEOUT]),
+    if   Ms*1000000+S-Time > ?MC_LOCK_TIMEOUT ->
+            lager:warning("session ~p, lock timeout ~p", [SessionID, ?MC_LOCK_TIMEOUT]),
             {nok, lock_timeout}
         ;true ->
-            case mcache:set(<<"mijkweb">>, <<"lock-", SessionID/binary>>, erl_to_mysql([]), raw, {?LOCK_AGE, seconds}, add) of
+            case mcache:set(<<"mijkweb">>, <<"lock-", SessionID/binary>>, erl_to_mysql([]), raw, {?MC_LOCK_AGE, seconds}, add) of
                 {mc_async,0,ok} ->
                     case ?MODULE:mcache_check_session_data(SessionID) of
-                        {ok, B} -> {ok, B}
+                        {ok, B} -> {ok, B};
                         nok     -> mcache:delete(<<"mijkweb">>, <<"lock-", SessionID/binary>>), nok
                     end;
                 {mc_async,0,{error,<<"CONNECTION DATA EXISTS">>}} -> %locked by another process, wait
                     lager:warning("session locked: ~p", [SessionID]),
-                    timer:sleep(?LOCK_SLEEP),
+                    timer:sleep(?MC_LOCK_SLEEP),
                     mcache_check_session_data_lock(SessionID, Time)
             end
-    end
+    end.
 %
 %
 %
@@ -298,7 +300,7 @@ mcache_update_session(SessionID, SessionData) ->
 %
 %
 -spec mcache_update_session_lock(binary(), list()) -> ok | nok.
-mcache_update_session_lock(SSID, NewData) ->
+mcache_update_session_lock(SessionID, SessionData) ->
     mcache_update_session(SessionID, SessionData),
     mcache:delete(<<"mijkweb">>, <<"lock-", SessionID/binary>>),
     ok.

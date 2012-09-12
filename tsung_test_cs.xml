@@ -18,11 +18,11 @@
     <monitor host="localhost" type="erlang"/>
   </monitoring>
   
-  <load duration="60" unit="minute">
+  <load duration="2" unit="minute">
   <!-- several arrival phases can be set: for each phase, you can set
   the mean inter-arrival time between new clients and the phase
   duration -->
-   <arrivalphase phase="1" duration="60" unit="minute">
+   <arrivalphase phase="1" duration="2" unit="minute">
      <users arrivalrate="5" unit="second"></users>
    </arrivalphase>
   </load>
@@ -43,19 +43,42 @@
 
     <!-- full url with server name, this overrides the "server" config value -->
     <thinktime min="5" max="15" random="true"></thinktime>
-    <transaction name="tre1">
-      <request> <http url="/test3" method="GET" version="1.1"><add_cookie key="MIJKSSID" value="mijkssid:get_cookie()"/></http> </request>
-      <request> <http url="/test3" method="GET" version="1.1"><add_cookie key="MIJKSSID" value="mijkssid:get_cookie()"/></http> </request>
-      <request> <http url="/test3" method="GET" version="1.1"><add_cookie key="MIJKSSID" value="mijkssid:get_cookie()"/></http> </request>
-      <request> <http url="/test3" method="GET" version="1.1"><add_cookie key="MIJKSSID" value="mijkssid:get_cookie()"/></http> </request>
-    </transaction>
-    <request> <http url="/test3" method="GET" version="1.1"><add_cookie key="MIJKSSID" value="mijkssid:get_cookie()"/></http> </request>
-    <request> <http url="/test3" method="GET" version="1.1"><add_cookie key="MIJKSSID" value="mijkssid:get_cookie()"/></http> </request>
-    <request> <http url="/test3" method="GET" version="1.1"><add_cookie key="MIJKSSID" value="mijkssid:get_cookie()"/></http> </request>
-    <request> <http url="/test3" method="GET" version="1.1"><add_cookie key="MIJKSSID" value="mijkssid:get_cookie()"/></http> </request>
-    <request> <http url="/test3" method="GET" version="1.1"><add_cookie key="MIJKSSID" value="mijkssid:get_cookie()"/></http> </request>
-    <request> <http url="/test3" method="GET" version="1.1"><add_cookie key="MIJKSSID" value="mijkssid:get_cookie()"/></http> </request>
-    <request> <http url="/test3" method="GET" version="1.1"><add_cookie key="MIJKSSID" value="mijkssid:get_cookie()"/></http> </request>
+    <setdynvars sourcetype="erlang" callback="mijkssid:get_cookie">
+        <var name="mijkssid" />
+      </setdynvars>
+    <request subst="true"> <http url="/test3" method="GET" version="1.1">
+      <add_cookie key="MIJKSSID" value="%%_mijkssid%%"/></http>
+    </request>
+    <!--request subst="true"> <http url="/test3" method="GET" version="1.1">
+      <add_cookie key="MIJKSSID" value="%%mijkssid:get_cookie%%"/></http>
+    </request>
+    <request subst="true"> <http url="/test3" method="GET" version="1.1">
+      <add_cookie key="MIJKSSID" value="%%mijkssid:get_cookie%%"/></http>
+    </request>
+    <request subst="true"> <http url="/test3" method="GET" version="1.1">
+      <add_cookie key="MIJKSSID" value="%%mijkssid:get_cookie%%"/></http>
+    </request>
+    <request subst="true"> <http url="/test3" method="GET" version="1.1">
+      <add_cookie key="MIJKSSID" value="%%mijkssid:get_cookie%%"/></http>
+    </request>
+    <request subst="true"> <http url="/test3" method="GET" version="1.1">
+      <add_cookie key="MIJKSSID" value="%%mijkssid:get_cookie%%"/></http>
+    </request>
+    <request subst="true"> <http url="/test3" method="GET" version="1.1">
+      <add_cookie key="MIJKSSID" value="%%mijkssid:get_cookie%%"/></http>
+    </request>
+    <request subst="true"> <http url="/test3" method="GET" version="1.1">
+      <add_cookie key="MIJKSSID" value="%%mijkssid:get_cookie%%"/></http>
+    </request>
+    <request subst="true"> <http url="/test3" method="GET" version="1.1">
+      <add_cookie key="MIJKSSID" value="%%mijkssid:get_cookie%%"/></http>
+    </request>
+    <request subst="true"> <http url="/test3" method="GET" version="1.1">
+      <add_cookie key="MIJKSSID" value="%%mijkssid:get_cookie%%"/></http>
+    </request>
+    <request subst="true"> <http url="/test3" method="GET" version="1.1">
+      <add_cookie key="MIJKSSID" value="%%mijkssid:get_cookie%%"/></http>
+    </request-->
     
     <thinktime min="5" max="15" random="true"></thinktime>
     
