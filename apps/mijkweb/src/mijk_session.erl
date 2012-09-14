@@ -22,16 +22,19 @@
             mysql_check_session_data/1,
             mysql_update_session/2,
             mcache_check_session_data/1,
+            mcd_check_session_data/1,
             mcache_check_session_data_lock/1,
             mcache_check_session_data_lock/2,
             mcache_update_session_lock/2,
             mcache_update_session/2,
+            mcd_update_session/2,
             dirty_init_session/1,
             mysql_init_session/1,
             mcache_init_session/1,
             dirty_create_session/1,
             mysql_create_session/1,
             mcache_create_session/1,
+            mcd_create_session/1,
             mysql_to_erl/1,
             erl_to_mysql/1,
             get_instance/1,
@@ -64,7 +67,7 @@ init() ->
             mijk_session:clean_up_sessions_job()
     end.
 
-init("memcached") -> mcache:start();
+init("memcached") -> unlink(element(2, mcd:start_link(localmcd, []))), mcache:start();
 init("mysql")     ->
     emysql:execute(sessionpool, <<"create table IF NOT EXISTS mijkweb_session (
         guid varchar(50) not null,
@@ -148,6 +151,9 @@ mysql_init_session(SSID) ->
 mcache_init_session(SSID) ->
     mcache:set(<<"mijkweb">>, SSID, erl_to_mysql([]), raw, {?SESSION_AGE, seconds}).
 
+-spec mcd_init_session(binary()) -> any().    
+mcd_init_session(SSID) -> mcd:ldo(set, SSID, erl_to_mysql([]), 0, ?SESSION_AGE).
+
 select(all) ->
     mnesia:transaction(fun()-> mnesia:select(mijk_session, [{{mijk_session,'$1','$2','$3'}, [], ['$_']}]) end).
 %-------------------------------------------------------------------------------
@@ -186,6 +192,15 @@ mcache_create_session(Type) when is_integer(Type)->
 mcache_create_session(SSID) when is_binary(SSID)->
     lager:debug("BSSID: ~p", [SSID]),
     mcache_init_session(SSID), SSID.
+
+-spec mcd_create_session(integer()|binary()) -> binary().
+mcd_create_session(Type) when is_integer(Type)->
+    SSID = generate_session_uuid(Type),
+    mcd_init_session(SSID), SSID;
+mcd_create_session(SSID) when is_binary(SSID)->
+    lager:debug("BSSID: ~p", [SSID]),
+    mcd_init_session(SSID), SSID.
+
 
 %
 %
@@ -248,6 +263,12 @@ mcache_check_session_data(SessionID) ->
         ;_                  -> nok
     end.
     
+-spec mcd_check_session_data(binary()) -> nok | {ok, list()}.    
+mcd_check_session_data(SessionID) ->
+    case mcd:get(SessionID) of
+        {ok, B} when is_binary(B) -> {ok, B}
+        ;_                        -> nok
+    end.
 %
 %
 %
@@ -294,6 +315,12 @@ mcache_check_session_data_lock(SessionID, Time) ->
 mcache_update_session(SessionID, SessionData) ->
     lager:debug("MUS-> ~p ~p ~n", [SessionData, SessionData]),
     mcache:set(<<"mijkweb">>, SessionID, erl_to_mysql(SessionData), raw, {?SESSION_AGE, seconds}),
+    ok.
+
+-spec mcd_update_session(binary(), list()) -> ok | nok.    
+mcd_update_session(SessionID, SessionData) ->
+    lager:debug("MUS-> ~p ~p ~n", [SessionData, SessionData]),
+    mcd:ldo(set, SessionID, erl_to_mysql(SessionData), 0, ?SESSION_AGE),
     ok.
     
 %

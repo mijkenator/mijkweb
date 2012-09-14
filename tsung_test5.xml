@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <!DOCTYPE tsung SYSTEM "/opt/erl15b01/share/tsung/tsung-1.0.dtd">
-<!-- testing concurrent sessions -->
 <tsung loglevel="notice" version="1.0">
 
   <!-- Client side setup -->
@@ -18,11 +17,11 @@
     <monitor host="localhost" type="erlang"/>
   </monitoring>
   
-  <load duration="2" unit="minute">
+  <load duration="60" unit="minute">
   <!-- several arrival phases can be set: for each phase, you can set
   the mean inter-arrival time between new clients and the phase
   duration -->
-   <arrivalphase phase="1" duration="2" unit="minute">
+   <arrivalphase phase="1" duration="60" unit="minute">
      <users arrivalrate="5" unit="second"></users>
    </arrivalphase>
   </load>
@@ -43,20 +42,19 @@
 
     <!-- full url with server name, this overrides the "server" config value -->
     <thinktime min="5" max="15" random="true"></thinktime>
-    <request> <http url="/test/cookie" method="GET" version="1.1"></http> </request>
     <transaction name="tre1">
-      <request> <http url="/test3" method="GET" version="1.1"></http> </request>
-      <request> <http url="/test3" method="GET" version="1.1"></http> </request>
-      <request> <http url="/test3" method="GET" version="1.1"></http> </request>
-      <request> <http url="/test3" method="GET" version="1.1"></http> </request>
+      <request> <http url="/test4" method="GET" version="1.1"></http> </request>
+      <request> <http url="/test4" method="GET" version="1.1"></http> </request>
+      <request> <http url="/test4" method="GET" version="1.1"></http> </request>
+      <request> <http url="/test4" method="GET" version="1.1"></http> </request>
     </transaction>
-    <request> <http url="/test3" method="GET" version="1.1"></http> </request>
-    <request> <http url="/test3" method="GET" version="1.1"></http> </request>
-    <request> <http url="/test3" method="GET" version="1.1"></http> </request>
-    <request> <http url="/test3" method="GET" version="1.1"></http> </request>
-    <request> <http url="/test3" method="GET" version="1.1"></http> </request>
-    <request> <http url="/test3" method="GET" version="1.1"></http> </request>
-    <request> <http url="/test3" method="GET" version="1.1"></http> </request>
+    <request> <http url="/test4" method="GET" version="1.1"></http> </request>
+    <request> <http url="/test4" method="GET" version="1.1"></http> </request>
+    <request> <http url="/test4" method="GET" version="1.1"></http> </request>
+    <request> <http url="/test4" method="GET" version="1.1"></http> </request>
+    <request> <http url="/test4" method="GET" version="1.1"></http> </request>
+    <request> <http url="/test4" method="GET" version="1.1"></http> </request>
+    <request> <http url="/test4" method="GET" version="1.1"></http> </request>
     
     <thinktime min="5" max="15" random="true"></thinktime>
     

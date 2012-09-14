@@ -16,6 +16,8 @@ start(_StartType, _StartArgs) ->
         {[<<"test1">>], no_session_handler, []},
         {[<<"test2">>], quick_session_handler, []},
         {[<<"test3">>], full_session_handler, []},
+        {[<<"test4">>], mcd_session_handler, []},
+        {[<<"test">>,<<"cookie">>], set_cookie_handler, []},
         {'_', def_handler, []}
        ]}
     ],

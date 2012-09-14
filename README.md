@@ -30,3 +30,4 @@ distributed master-master mnesia
 - emakefile for updates
 - script wrapper for start,stop,attach ... + activation 15B01 kerl evm
 - mcd library test
+- riak tests
