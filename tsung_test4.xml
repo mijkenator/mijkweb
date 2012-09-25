@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE tsung SYSTEM "/opt/erl15b01/share/tsung/tsung-1.0.dtd">
+<!DOCTYPE tsung SYSTEM "/opt/r15b01/share/tsung/tsung-1.0.dtd">
 <tsung loglevel="notice" version="1.0">
 
   <!-- Client side setup -->
@@ -9,8 +9,8 @@
   
   <!-- Server side setup -->
   <servers>
-    <server host="localhost" port="8080" type="tcp"></server>
-    <server host="localhost" port="8080" type="tcp"></server>
+    <server host="127.0.0.1" port="8080" type="tcp"></server>
+    <server host="127.0.0.1" port="8080" type="tcp"></server>
   </servers>
 
   <monitoring>

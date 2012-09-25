@@ -8,6 +8,7 @@
                   stdlib,
                   sasl,
                   lager,
+		  ranch,
                   cowboy,
                   crypto,
                   public_key,

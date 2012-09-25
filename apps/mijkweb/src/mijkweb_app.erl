@@ -21,10 +21,11 @@ start(_StartType, _StartArgs) ->
         {'_', def_handler, []}
        ]}
     ],
-    cowboy:start_listener(my_http_listener, 100,
-       cowboy_tcp_transport, [{port, 8080}],
-       cowboy_http_protocol, [{dispatch, Dispatch}]
-    ),
+    %cowboy:start_listener(my_http_listener, 100,
+    %   cowboy_tcp_transport, [{port, 8080}],
+    %   cowboy_http_protocol, [{dispatch, Dispatch}]
+    %),
+    cowboy:start_http(my_http_listener, 100, [{port, 8080}], [{dispatch, Dispatch}]),	
     mijk_session:init(),
     mijkweb_sup:start_link().
 

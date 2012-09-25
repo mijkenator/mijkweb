@@ -5,7 +5,6 @@
     mcache_get_session_header/1
 ]).
 
--include("../../deps/cowboy/include/http.hrl").
 -include("include/consts.hrl").
 
 %
@@ -17,11 +16,11 @@
 init({tcp, http}, Req, _Opts) ->
     {ok, Req, undefined_state}.
 
-handle(#http_req{method=Method, raw_path=RPath} = Req, State) ->
+handle(#http_req{method=Method, path=RPath} = Req, State) ->
     Headers = ?MODULE:mcache_get_session_header(Req),
     lager:debug("REQ(fsh): ~p -> ~p ~n", [Method, RPath]),
     IpS = list_to_binary(io_lib:format("~p", [inet:getifaddrs()])), 
-    {ok, Req2} = cowboy_http_req:reply(200, Headers, <<"Kolobok alive!\n<br>", IpS/binary>>, Req),
+    {ok, Req2} = cowboy_req:reply(200, Headers, <<"Kolobok alive!\n<br>", IpS/binary>>, Req),
     {ok, Req2, State}.
     
 terminate(_Req, _State) ->
@@ -30,8 +29,8 @@ terminate(_Req, _State) ->
 
 -spec mcache_get_session_header(#http_req{}) -> kvlist().
 mcache_get_session_header(Req) ->
-    lager:debug("COOKIE ~p ~n", [cowboy_http_req:cookie(<<"MIJKSSID">>, Req, undefined)]),
-    case cowboy_http_req:cookie(<<"MIJKSSID">>, Req, undefined) of
+    lager:debug("COOKIE ~p ~n", [cowboy_req:cookie(<<"MIJKSSID">>, Req, undefined)]),
+    case cowboy_req:cookie(<<"MIJKSSID">>, Req, undefined) of
         {undefined, _} ->
             [cowboy_cookies:cookie(<<"MIJKSSID">>, mijk_session:mcache_create_session(1),[{max_age, ?SESSION_AGE}])];
         {SSID, _}      ->
