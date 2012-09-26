@@ -9,8 +9,8 @@
   
   <!-- Server side setup -->
   <servers>
-    <server host="127.0.0.1" port="8080" type="tcp"></server>
-    <server host="127.0.0.1" port="8080" type="tcp"></server>
+    <server host="127.0.0.1" port="3030" type="tcp"></server>
+    <server host="127.0.0.1" port="3030" type="tcp"></server>
   </servers>
 
   <monitoring>
@@ -43,18 +43,18 @@
     <!-- full url with server name, this overrides the "server" config value -->
     <thinktime min="5" max="15" random="true"></thinktime>
     <transaction name="tre1">
-      <request> <http url="/test1" method="GET" version="1.1"></http> </request>
-      <request> <http url="/test1" method="GET" version="1.1"></http> </request>
-      <request> <http url="/test1" method="GET" version="1.1"></http> </request>
-      <request> <http url="/test1" method="GET" version="1.1"></http> </request>
+      <request> <http url="/test/elli" method="GET" version="1.1"></http> </request>
+      <request> <http url="/test/elli" method="GET" version="1.1"></http> </request>
+      <request> <http url="/test/elli" method="GET" version="1.1"></http> </request>
+      <request> <http url="/test/elli" method="GET" version="1.1"></http> </request>
     </transaction>
-    <request> <http url="/test1" method="GET" version="1.1"></http> </request>
-    <request> <http url="/test1" method="GET" version="1.1"></http> </request>
-    <request> <http url="/test1" method="GET" version="1.1"></http> </request>
-    <request> <http url="/test1" method="GET" version="1.1"></http> </request>
-    <request> <http url="/test1" method="GET" version="1.1"></http> </request>
-    <request> <http url="/test1" method="GET" version="1.1"></http> </request>
-    <request> <http url="/test1" method="GET" version="1.1"></http> </request>
+    <request> <http url="/test/elli" method="GET" version="1.1"></http> </request>
+    <request> <http url="/test/elli" method="GET" version="1.1"></http> </request>
+    <request> <http url="/test/elli" method="GET" version="1.1"></http> </request>
+    <request> <http url="/test/elli" method="GET" version="1.1"></http> </request>
+    <request> <http url="/test/elli" method="GET" version="1.1"></http> </request>
+    <request> <http url="/test/elli" method="GET" version="1.1"></http> </request>
+    <request> <http url="/test/elli" method="GET" version="1.1"></http> </request>
     
     <thinktime min="5" max="15" random="true"></thinktime>
     

@@ -26,6 +26,7 @@ start(_StartType, _StartArgs) ->
     %   cowboy_http_protocol, [{dispatch, Dispatch}]
     %),
     cowboy:start_http(my_http_listener, 100, [{port, 8080}], [{dispatch, Dispatch}]),	
+    elli:start_link([{callback, elli_pirogok_callback}, {port, 3030}]),
     mijk_session:init(),
     mijkweb_sup:start_link().
 
