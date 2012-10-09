@@ -17,12 +17,12 @@
     <monitor host="mk-vm" type="erlang"/>
   </monitoring>
   
-  <load duration="10" unit="minute">
+  <load duration="120" unit="minute">
   <!-- several arrival phases can be set: for each phase, you can set
   the mean inter-arrival time between new clients and the phase
   duration -->
-   <arrivalphase phase="1" duration="10" unit="minute">
-     <users arrivalrate="5" unit="second"></users>
+   <arrivalphase phase="1" duration="120" unit="minute">
+     <users arrivalrate="25" unit="second"></users>
    </arrivalphase>
   </load>
 

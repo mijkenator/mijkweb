@@ -1,0 +1,11 @@
+{application, riak_man,
+ [
+  {description, "riak clients pool"},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib, poolboy
+                 ]},
+  {mod, { riak_man, []}}
+ ]}.
