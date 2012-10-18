@@ -1,0 +1,18 @@
+% vim:syn=erlang
+
+
+
+(mijkweb@127.0.0.1)65> f(MR), MR = [{map, {modfun, riak_man_mr_funcs, test2}, none, false},{reduce, {modfun, riak_kv_mapreduce, reduce_count_inputs}, none, true}].
+(mijkweb@127.0.0.1)65> f(Num), {ok, [{1, [Num]}]} = riak_man_test:mr(<<"buck_ld">>, 22000, MR).
+
+
+
+(mijkweb@127.0.0.1)65> f(MR), MR = [{map, {modfun, riak_man_mr_funcs, test2}, none, false},{reduce, {modfun, riak_kv_mapreduce, reduce_sort}, none, true}].   
+(mijkweb@127.0.0.1)69> riak_man_test:mr(<<"buck_ld">>, 1500, MR).
+
+
+f(MR), MR = [{map, {modfun, riak_man_mr_funcs, test3}, none, true},{map, {modfun, riak_man_mr_funcs, test4}, none, true},{reduce, {modfun, riak_kv_mapreduce, reduce_sort}, none, true}].  
+riak_man_test:mr(<<"buck_ld">>, 1500, MR).
+
+
+(mijkweb@127.0.0.1)15> f(MR), MR = [{map, {modfun, riak_man_mr_funcs, test3}, none, false},{map, {modfun, riak_man_mr_funcs, test4}, none, true}].
