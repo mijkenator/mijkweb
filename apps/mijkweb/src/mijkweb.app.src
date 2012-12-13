@@ -8,13 +8,15 @@
                   stdlib,
                   sasl,
                   lager,
-		  ranch,
+		          ranch,
                   cowboy,
                   crypto,
                   public_key,
                   ssl,
                   mnesia,
-                  emysql
+                  emysql,
+                  dps,
+                  mimetypes
                  ]},
   {mod, { mijkweb_app, []}},
   {env, [

@@ -1,0 +1,6 @@
+-define(INVALID_JSON,    {1, <<"invalid json">>}).
+-define(PUSH_BUSY,       {2, <<"messaging system busy">>}).
+-define(PUSH_NOMESSAGE,  {3, <<"no message for push command">>}).
+-define(PUSH_NOCHANNEL,  {4, <<"no channel for push command">>}).
+-define(JSON_BADCOMMAND, {5, <<"bad command syntax">>}).
+-define(UNKNOWN_ERROR,   {6, <<"unknown error">>}).
