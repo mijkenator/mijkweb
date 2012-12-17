@@ -8,8 +8,8 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +31 apps/mijkweb/src/mijkweb_app.erl
-badd +52 apps/mijkweb/src/elli_pirogok_callback.erl
+badd +16 apps/mijkweb/src/mijkweb_app.erl
+badd +72 apps/mijkweb/src/elli_pirogok_callback.erl
 badd +2 tsung_ellitest_ns.xml
 badd +2 tsung_test_ns.xml
 badd +1 tsung_ellitest_s_mcd.xml
@@ -17,27 +17,33 @@ badd +57 tsung_nginx_ns.xml
 badd +1 apps/mijkweb/src/full_session_handler.erl
 badd +10 apps/mijkweb/src/def_handler.erl
 badd +26 apps/mijkweb/src/mcd_session_handler.erl
-badd +8 apps/mijkweb/src/long_polling.erl
+badd +12 apps/mijkweb/src/long_polling.erl
 badd +16 rebar.config
 badd +19 apps/mijkweb/src/mijkweb.app.src
 badd +76 deps/dps/src/dps_cowboy_handler.erl
 badd +50 deps/dps/src/dps_session.erl
-badd +1 apps/mijkweb/include/mijkweb_consts.hrl
-badd +10 apps/mijkweb/src/mijkweb_response.erl
+badd +10 apps/mijkweb/include/mijkweb_consts.hrl
+badd +8 apps/mijkweb/src/mijkweb_response.erl
+badd +12 apps/mijkweb/src/elli_pirogok.erl
+badd +60 apps/mijkweb/src/mijkweb_session.erl
+badd +6 apps/mijkweb/src/mijk_session.erl
+badd +8 apps/mijkweb/src/mijkweb_utils.erl
+badd +10 apps/mijkweb/include/consts.hrl
+badd +26 apps/mijkweb/src/auth_utils.erl
 silent! argdel *
-edit apps/mijkweb/src/mijkweb_response.erl
+edit apps/mijkweb/src/mijkweb_utils.erl
 set splitbelow splitright
 set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
 argglobal
-let s:l = 8 - ((7 * winheight(0) + 18) / 37)
+let s:l = 8 - ((7 * winheight(0) + 21) / 42)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 8
-normal! 062l
+normal! 0
 tabnext 1
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf

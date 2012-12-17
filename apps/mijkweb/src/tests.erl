@@ -18,7 +18,12 @@
     lt_parse_cookie/1,
     parse_cookie_lt/0,
     parse_cookie_lt_i/1,
-    reverse/1
+    reverse/1,
+
+    test_session_proc/0,
+    test_session_proc/1,
+    tsp1/1, tsp2/1,
+    test_sign_verify/1
 ]).
 
 
@@ -132,4 +137,75 @@ reverse(Binary) ->
 %lt_c_cl(<<$",R/utf8,$">>) -> <<R>>;
 %lt_c_cl(String)           -> re2:replace(String, ["\\s"], [], [global, {return, binary}]).
 %lt_c_cl(String)           -> re2:replace(String, ["\\s"], [], []).
+
+-define(Req, {req,'POST',
+         [<<"poll">>],
+         [],<<"/poll">>,
+         {1,1},
+         [{<<"Cookie2">>,<<"$Version=\"1\"">>},
+          {<<"Cookie">>,<<"MIJKSSID=22a2748b-6216-4748-aa49-12a0ceed0b0d">>},
+          {<<"Content-Type">>,<<"application/x-www-form-urlencoded">>},
+          {<<"Content-Length">>,<<"101">>},
+          {<<"User-Agent">>,<<"libwww-perl/6.03">>},
+          {<<"Host">>,<<"localhost:3030">>},
+          {<<"Connection">>,<<"TE, close">>},
+          {<<"Te">>,<<"deflate,gzip;q=0.3">>}],
+         <<"request=%7B%22type%22%3A%22poll%22%2C%22seq%22%3A0%2C%22channels%22%3A%5B%22ch1%22%2C+%22ch2%22%5D%7D">>,
+         "<0.333.0>",""}).
+
+test_session_proc() ->
+    test("MCACHE:", fun() -> tsp1(1000) end),
+    test("SIGN:  ",   fun() -> tsp2(1000) end).
+
+test_session_proc(N) ->
+    test("MCACHE:", fun() -> tsp1(N) end),
+    test("SIGN:  ",   fun() -> tsp2(N) end).
+
+tsp1(0) -> ok;
+tsp1(N) ->
+    mijkweb_session:session_process(elli, ?Req, []),    
+    tsp1(N-1).
+
+tsp2(0) -> ok;
+tsp2(N) ->
+    mijkweb_session:session_process(ellic, ?Req, []),    
+    tsp2(N-1).
+
+test_sign_verify(N) ->
+    test("SIGN  :", fun() -> t_sign(N) end),
+    test("VERIFY:", fun() -> t_sign_ver(N) end),
+    test("JSONTO:", fun() -> t_jsnto(N) end),
+    test("JSFROM:", fun() -> t_jsnfrom(N) end),
+    test("COOKTO:", fun() -> t_cookto(N) end),
+    test("COFROM:", fun() -> t_cookfrm(N) end).
+
+t_sign(0) -> ok;
+t_sign(N) ->
+    auth_utils:sign(<<"{\"ts\":1234567890, \"counter\":10}">>),
+    t_sign(N-1).
+
+t_sign_ver(0) -> ok;
+t_sign_ver(N) ->
+    auth_utils:check_sign(<<"{\"ts\":1234567890, \"counter\":10}">>, <<"MCwCFDeHSoMf0fyfrQsDOrYKtU4T9TjjAhRUDfN35o%2FIiHcIQO02KC3uXZrzZA%3D%3D">>),
+    t_sign_ver(N-1).
+
+t_jsnto(0) -> ok;
+t_jsnto(N) ->
+    jiffy:encode({[{<<"ts">>, 1234567890},{<<"counter">>, 10}]}),
+    t_jsnto(N-1).
+
+t_jsnfrom(0) -> ok;
+t_jsnfrom(N) ->
+    jiffy:decode(<<"{\"ts\":1234567890, \"counter\":10}">>),
+    t_jsnfrom(N-1).
+
+t_cookto(0) -> ok;
+t_cookto(N) ->
+    mijkweb_utils:cookie_encode(<<"{\"ts\":1234567890, \"counter\":10}">>),
+    t_cookto(N-1).
+
+t_cookfrm(0) -> ok;
+t_cookfrm(N) ->
+    mijkweb_utils:cookie_decode(<<"eyJ0cyI6MTIzNDU2Nzg5MCwgImNvdW50ZXIiOjEwfQ%3D%3D">>),
+    t_cookfrm(N-1).
 

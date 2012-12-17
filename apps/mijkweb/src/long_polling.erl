@@ -30,30 +30,36 @@ poll_request(RequestBody, SessionId) when is_binary(RequestBody), is_binary(Sess
                 {<<"type">>, Type},
                 {<<"status">>, <<"ok">>},
                 {<<"seq">>, Seq},
-                {<<"data">>, [{<<"messages">>, Messages}]}
+                {<<"data">>, {[{<<"messages">>, Messages}]}}
             ]},
             lager:debug("LPPR4-1 ~p ~n", [Response]),
             JResp = mijkweb_response:json_ok_response(Response),
-            lager:debug("LPPR5 ~p ~n", [JResp])
+            lager:debug("LPPR5 ~p ~n", [JResp]),
+            JResp
     catch
         _:_ -> mijkweb_response:json_error_response(?INVALID_JSON) 
     end.
 
 -spec push_request(binary()) -> binary().
 push_request(RequestBody) when is_binary(RequestBody) ->
+    lager:debug("LPPUR1 ~p", [RequestBody]),
     try
         {PList} = jiffy:decode(RequestBody),
-        is_binary(PList) orelse throw({error, bad_command}),
+    lager:debug("LPPUR1-1 ~p", [PList]),
+        is_list(PList) orelse throw({error, bad_command}),
         [Type, Msg, Channel] = [ proplists:get_value(Ch, PList, undefined) 
                                  || Ch <- [<<"type">>, <<"message">>, <<"channel">>]],
         is_binary(Channel) orelse throw({error, no_channel}),
         is_binary(Msg) orelse throw({error, no_message}),
+    lager:debug("LPPUR2 ~p", [{Type, Msg, Channel}]),
         dps:new(Channel),
         dps:publish(Channel, Msg),
-        Response = [
+    lager:debug("LPPUR3", []),
+        Response = {[
             {<<"type">>, Type},
             {<<"status">>, <<"ok">>}
-        ],
+        ]},
+    lager:debug("LPPUR4 ~p", [Response]),
         mijkweb_response:json_ok_response(Response)
     catch
         throw:dps_busy                 -> mijkweb_response:json_error_response(?PUSH_BUSY);

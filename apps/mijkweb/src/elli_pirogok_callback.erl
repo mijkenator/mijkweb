@@ -2,6 +2,7 @@
 -export([handle/2, handle_event/3]).
 
 -include("include/consts.hrl").
+-include("include/mijkweb_consts.hrl").
 -include_lib("elli/include/elli.hrl").
 -behaviour(elli_handler).
 
@@ -49,19 +50,29 @@ handle('GET',[<<"test">>, <<"elli">>, <<"cookie">>, <<"mcd">>], Req) ->
     end;
 
 handle('POST', [<<"poll">>], Req) ->
-    lager:debug("ElliPOLL req: ~p ~n", [Req]),
-    Req1 = elli_request:post_arg(<<"request">>, Req, <<"{}">>),
-    lager:debug("ElliPOLL req1: ~p ~n", [Req1]),
-    Req2 = cowboy_http:urldecode(Req1),
-    lager:debug("ElliPOLL req2: ~p ~n", [Req2]),
-    Cookies = elli_request:get_header(<<"Cookie">>, Req, []),
-    lager:debug("ElliPOLL req2-1: ~p ~n", [Cookies]),
-    [{_, SSID}] = [{Key, Value} || {Key, Value} <- tests:lt_parse_cookie(Cookies), Key =:= <<"MIJKSSID">> ],
-    lager:debug("ElliPOLL req3: ~p ~n", [SSID]),
-    RespBody    = long_polling:poll_request(cowboy_http:urldecode(elli_request:post_arg(<<"request">>, Req, <<"{}">>)),SSID),
-    lager:debug("ElliPOLL resp ~p ~n", [RespBody]),
-    RespHeaders = mijkweb_session:session_process(elli_request:get_heaser(<<"Cookie">>, Req, undefined)),
-    {ok, RespHeaders, RespBody};
+    io:format("--> ~p ~n", [Req]),
+    try
+        [SSID, RespHeaders] = mijkweb_session:session_process(elli, Req),
+        lager:debug("ElliPoll: ~p ~p",[SSID, RespHeaders]),
+        {ok, RespHeaders,               
+         long_polling:poll_request(cowboy_http:urldecode(elli_request:post_arg(<<"request">>, Req, <<"{}">>)),SSID)}
+    catch
+        Error:Reason ->
+            lager:error("elli poll error: ~p ~p", [Error, Reason]),
+            {ok, [], mijkweb_response:json_error_response(?UNKNOWN_ERROR)}
+    end;
+
+handle('POST', [<<"push">>], Req) ->
+    try
+        [SSID, RespHeaders] = mijkweb_session:session_process(elli, Req),
+        lager:debug("ElliPush: ~p ~p",[SSID, RespHeaders]),
+        {ok, RespHeaders,               
+         long_polling:push_request(cowboy_http:urldecode(elli_request:post_arg(<<"request">>, Req, <<"{}">>)))}
+    catch
+        Error:Reason ->
+            lager:error("elli push error: ~p ~p", [Error, Reason]),
+            {ok, [], mijkweb_response:json_error_response(?UNKNOWN_ERROR)}
+    end;
 
 handle(_, _, _Req) ->
     {404, [], <<"Ты кто такой, давай досвидания!">>}.
