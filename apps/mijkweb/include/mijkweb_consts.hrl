@@ -9,3 +9,8 @@
 -define(AUTH_NOPASSWORD, {9,  <<"authentication required">>}).
 -define(AUTH_FAILED    , {10, <<"authentication failed">>}).
 -define(BADCOMMAND     , {11, <<"bad command">>}).
+-define(BADEMAIL       , {12, <<"bad email address">>}).
+-define(BADLOGINTYPE   , {13, <<"bad login type">>}).
+-define(BADSYSACCOUNT  , {14, <<"bad system account id">>}).
+-define(NODEVKEY       , {15, <<"no development key">>}).
+-define(LOGININUSE     , {16, <<"login already in use">>}).

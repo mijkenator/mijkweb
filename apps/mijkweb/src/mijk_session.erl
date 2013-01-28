@@ -319,7 +319,7 @@ mcache_update_session(SessionID, SessionData) ->
 
 -spec mcd_update_session(binary(), list()) -> ok | nok.    
 mcd_update_session(SessionID, SessionData) ->
-    lager:debug("MUS-> ~p ~p ~n", [SessionData, SessionData]),
+    lager:debug("MUS1-> ~p ~p ~n", [SessionData, SessionData]),
     mcd:ldo(set, SessionID, erl_to_mysql(SessionData), 0, ?SESSION_AGE),
     ok.
     

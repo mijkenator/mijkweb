@@ -2,7 +2,7 @@
 
 -export([
     poll/2,
-    poll_request/2,
+    poll_request/3,
     push_request/1
 ]).
 
@@ -13,14 +13,19 @@ poll(Ts, Channels) ->
     {ok, LastTS, Messages} = dps:multi_fetch(Channels, Ts, 30000),
     {ok, LastTS, Messages}.
 
--spec poll_request(binary(), binary()) -> binary().
-poll_request(RequestBody, SessionId) when is_binary(RequestBody), is_binary(SessionId)->
-    lager:debug("LPPR ~n ~p", [SessionId]),
+-spec poll_request(binary(), binary(), list()) -> binary().
+poll_request(RequestBody, SessionId, SessionData) when is_binary(RequestBody), is_binary(SessionId)->
+    lager:debug("LPPR ~n ~p", [SessionId, SessionData]),
     try jiffy:decode(RequestBody) of
         {PList} when is_list(PList) ->
             lager:debug("LPPR1 ~p ~n", [PList]),
-            [Type, OldSeq, Channels] = [ proplists:get_value(Ch, PList) 
-                                         || Ch <- [<<"type">>, <<"seq">>, <<"channels">>]],
+            SysAccountId = proplists:get_value(SessionData, <<"loginextra">>, 0),
+            [Type, OldSeq, Channels] = mijkweb_utils:plist_values(PList, 
+                [{<<"type">>, <<"poll">>}, 
+                 {<<"seq">>, 0}, 
+                 {<<"channels">>, list_to_binary(io_lib:format("channel_~p",[SysAccountId]))}]),
+            %[Type, OldSeq, Channels] = [ proplists:get_value(Ch, PList) 
+            %                             || Ch <- [<<"type">>, <<"seq">>, <<"channels">>]],
             lager:debug("LPPR2 ~p ~n", [{Type, OldSeq, Channels}]),
             Session = dps_session:find_or_create(SessionId, Channels),
             lager:debug("LPPR3 ~p ~n", [Session]),
@@ -47,8 +52,12 @@ push_request(RequestBody) when is_binary(RequestBody) ->
         {PList} = jiffy:decode(RequestBody),
     lager:debug("LPPUR1-1 ~p", [PList]),
         is_list(PList) orelse throw({error, bad_command}),
-        [Type, Msg, Channel] = [ proplists:get_value(Ch, PList, undefined) 
-                                 || Ch <- [<<"type">>, <<"message">>, <<"channel">>]],
+        %[Type, Msg, Channel] = [ proplists:get_value(Ch, PList, undefined) 
+        %                         || Ch <- [<<"type">>, <<"message">>, <<"channel">>]],
+        [Type, Msg, Channel] = mijkweb_utils:plist_values(PList, 
+            [{<<"type">>, <<"push">>}, 
+             {<<"message">>, undefined}, 
+             {<<"channel">>, undefiend}]),
         is_binary(Channel) orelse throw({error, no_channel}),
         is_binary(Msg) orelse throw({error, no_message}),
     lager:debug("LPPUR2 ~p", [{Type, Msg, Channel}]),

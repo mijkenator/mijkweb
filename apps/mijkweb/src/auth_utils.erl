@@ -7,8 +7,16 @@
 ]).
 
 -spec check_credentials(binary(), binary()) -> {ok, tuple()} | false.
-check_credentials(<<"admin">>, <<"superpass">>) -> {ok, {}};
-check_credentials(_Login, _Password) -> false.
+check_credentials(<<"admin">>, <<"superpass">>) -> {ok, {1, 1, 1}}; %{account_id, login_type, org_id}
+check_credentials(Login, Password) -> 
+    case model_service_user:check_sys_user(Login, Password) of
+        {ok, Uid, OrgID} -> {ok, {Uid, 1, OrgID}};
+        _                -> 
+            case model_service_user:check_app_user(Login, Password) of
+                {ok, Uid, SuId} -> {ok, {Uid, 2, SuId}};
+                _               -> false
+            end
+    end.
 
 -define(PRIV, <<"-----BEGIN DSA PRIVATE KEY-----\nMIIBvAIBAAKBgQC73BM4/DjzIa1DJuwhkHkR10Rrb3Ng6jq1AFLx/dlKqpWzfs/Y\nK0K2ICuzLjQsiDvZ+oHZU5oTfK7ImhZBVrMCR29636AnSz/JbQBWoGqk2p2MY7iC\nFKg52WiU6pVoLYaKNDzlnc2MpmjVpMOfiLfb5CyYADF/WD1d9h1gBv96HwIVAIrj\nlBN+/KMSuHqyHNIwoSWqygDJAoGBAJM+rKM17g0QEYhhp7FGiu157ieTF5T0uAZ8\nxbXZKD5p1BE68C4lvdzqX7WTgIBCa+HDZyc3gSW4DTbWijzN+UEr/Xm3UTwajrBm\nrrykWs6QoKqpR1BkXRa8d2PvLXbNKx0l7IT6mwbyzsJCHs0Jyc2CYsB24wU/8xHA\nV6wCiB5MAoGBAJlx3Ek1SkGSNw1KbSYrr2tJJFTy7n7RLb0iZijKnL8fog87fxCh\nznX5li9ZLmtxJi+JjEPCvEeXwA1WXGBy7aEC+UNlB9PwnD6738tmhW801WDW/qMg\nsF08Zd+80WMb3mUzkhwkTPmX1jNd0GRCUQ2OW12d8idzlY0XR2g2qOi2AhRs9NbY\nA2f0MvnbpKUvZ8JrkHzqaw==\n-----END DSA PRIVATE KEY-----\n">>).
 

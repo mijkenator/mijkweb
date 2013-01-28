@@ -5,9 +5,13 @@
     merge_plists/2,
     plist_values/2,
     cookie_encode/1,
-    cookie_decode/1
+    cookie_decode/1,
+    session_age/0,
+    tlist_search/2,
+    is_email/1
 ]).
 
+-include("include/consts.hrl").
 -compile({no_auto_import,[now/0]}).
 
 -spec now() -> integer().
@@ -39,3 +43,13 @@ cookie_encode(C) when is_binary(C) ->
 -spec cookie_decode(binary()) -> binary().
 cookie_decode(C) when is_binary(C) ->
     base64:decode(http_uri:decode(binary_to_list(C))).
+
+session_age() -> ?SESSION_AGE.
+
+-spec tlist_search(list(), {atom, list()}) -> {ok, atom(), atom()} | {error, binary()}.
+tlist_search([], _) -> {error, <<"not found">>};
+tlist_search([{Type, Path, C, M}|_], {Type, Path}) -> {ok, C, M};
+tlist_search([_|T], {Type, Path}) -> tlist_search(T, {Type, Path}).
+
+-spec is_email(binary()) -> true|false.
+is_email(_) -> true.

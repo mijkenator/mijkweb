@@ -53,6 +53,7 @@
 -export_type([chash/0]).
     
 -define(RINGTOP, trunc(math:pow(2,160)-1)).  % SHA-1 space
+%-define(RINGTOP, trunc(math:pow(2,32)-1)).  % SHA-1 space
 
 -ifdef(TEST).
 -include_lib("eunit/include/eunit.hrl").

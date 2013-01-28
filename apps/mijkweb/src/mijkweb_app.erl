@@ -27,7 +27,20 @@ start(_StartType, _StartArgs) ->
     %),
     cowboy:start_http(my_http_listener, 100, [{port, 8080}], [{dispatch, Dispatch}]),	
     elli:start_link([{callback, elli_pirogok_callback}, {port, 3030}]),
+    elli:start_link([{callback, elli_pirogok}, {port, 3033}]),
     mijk_session:init(),
+
+    case application:get_env(mijkweb, mysql_db_config) of
+        {ok, [_|_] = L} ->
+            emysql:add_pool(mysqlpool,
+                proplists:get_value("processes", L, 20),
+                proplists:get_value("user", L, "mijkweb"),
+                proplists:get_value("password", L, "mijkweb"),
+                proplists:get_value("host", L, "localhost"),
+                proplists:get_value("port", L, 3306),
+                proplists:get_value("database", L, "mijkweb"), utf8)
+        ;_              -> exit("No mysql connection config")
+    end,
 
     mijkweb_sup:start_link().
 

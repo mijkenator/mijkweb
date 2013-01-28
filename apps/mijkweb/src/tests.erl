@@ -23,7 +23,20 @@
     test_session_proc/0,
     test_session_proc/1,
     tsp1/1, tsp2/1,
-    test_sign_verify/1
+    test_sign_verify/1,
+
+    chash_test/0, 
+    mcd_ring_test/1,
+    mcd_ring_test/2,
+    mcd_key_prop_test/2,
+    chash_add_node/2,
+    chash_ring_test/1,
+    chash_ring_test/3,
+    chash_key_prop_test/1,
+    chash_key_prop_test/3,
+    chash_ring_handler/2,
+    chash_ring_handler_loop/1,
+    mcache_driver_tests/1
 ]).
 
 
@@ -90,7 +103,10 @@ parse_cookie_lt_i(N) ->
     lt_parse_cookie(C1)
     , parse_cookie_lt_i(N - 1).
 
-lt_parse_cookie(String) ->
+lt_parse_cookie(<<"">>)    -> [];
+lt_parse_cookie(undefined) -> [];
+lt_parse_cookie([])        -> [];
+lt_parse_cookie(String) when is_binary(String)->
     lists:flatten([lt_parse_cookie_i(X) || X <- binary:split(String, <<";">>, [global]), X=/=<<>>]).
 
 lt_parse_cookie_i(<<$$,_/binary>>) -> [];
@@ -209,3 +225,156 @@ t_cookfrm(N) ->
     mijkweb_utils:cookie_decode(<<"eyJ0cyI6MTIzNDU2Nzg5MCwgImNvdW50ZXIiOjEwfQ%3D%3D">>),
     t_cookfrm(N-1).
 
+
+chash_test() ->
+    Fun = fun(Node, Chash) ->
+        chash:merge_rings(Chash, chash:fresh(256, Node))
+    end,
+    CH = lists:foldl(Fun, chash:fresh(256, 1), lists:seq(2,10)),
+    io:format("Nodes ~p ~n", [chash:nodes(CH)]),
+    io:format("Members ~p ~n", [chash:nodes(CH)]),
+    io:format("CH ~p ~n", [CH]).
+
+chash_add_node({N, RawRing} = R, NewNode) ->
+    Members = chash:members(R),
+    random:seed(),
+    NewNodeCount = N div (length(Members) + 1),
+    FunM = fun({Point, Node}, {AC, NR}) ->
+        case {proplists:get_value(Node, AC, 0), proplists:get_value(NewNode, AC, 0)} of
+            {C, B} when C >= NewNodeCount, B < NewNodeCount
+               -> {[{NewNode, B + 1}] ++ AC, [{Point, NewNode}] ++ NR}
+            ;{C, _} when C < NewNodeCount 
+               -> {[{Node, C + 1}] ++ AC, [{Point, Node}] ++ NR}
+            ;_ -> 
+                  I = random:uniform(length(Members) + 1),
+                  RNode = lists:nth(I, [NewNode] ++ Members),
+                  {[{RNode, proplists:get_value(RNode, AC, 0) + 1}] ++ AC, [{Point, RNode}] ++ NR}
+        end
+    end,
+    {_, NRR} = lists:foldl(FunM, {[], []}, RawRing),
+    {N, lists:reverse(NRR)}.
+
+chash_ring_test(N) -> chash_ring_test(N, 64, 6).
+chash_ring_test(N, RingSize, Points) ->
+    Fun = fun(K, R) -> tests:chash_add_node(R, K)  end,
+    Ring = lists:foldl(Fun, chash:fresh(RingSize, 1), lists:seq(2, Points)),
+    {A1,A2,A3} = now(),
+    random:seed(A1, A2, A3),
+    chash_ring:start_link([RingSize, Points]),
+    Pid = chash_ring_handler(RingSize, Points),
+    ets:new(ring_ets, [named_table, set, private]),
+    ets:insert(ring_ets, {1, Ring}),
+    test("chash lookup: ", fun() -> t_chash_r_test(Ring, N) end),
+    test("chash lookup1:", fun() -> t_chash_r_test1(N) end),
+    test("chash lookup2:", fun() -> t_chash_r_test2(N, Pid, self()) end),
+    test("chash lookup3:", fun() -> t_chash_r_test3(N) end).
+
+t_chash_r_test(_, 0)    -> ok;
+t_chash_r_test(Ring, N) ->
+    chash:successors(chash:key_of(random:uniform(10000000000)), Ring),
+    t_chash_r_test(Ring, N-1).
+
+t_chash_r_test1(0) -> ok;
+t_chash_r_test1(N) ->
+    chash_ring:lookup(random:uniform(10000000000)),
+    t_chash_r_test1(N-1).
+
+t_chash_r_test2(0, _, _) -> ok;
+t_chash_r_test2(N, P, O) ->
+    P ! {lookup, random:uniform(10000000000), O},
+    receive
+        _ -> ok
+    after 1000 -> io:format("TO! ~n", []), ok
+    end,
+    t_chash_r_test2(N-1, P, O).
+
+t_chash_r_test3(0) -> ok;
+t_chash_r_test3(N) ->
+    [{_, Ring}] = ets:lookup(ring_ets, 1),
+    chash:successors(chash:key_of(random:uniform(10000000000)), Ring),
+    t_chash_r_test3(N-1).
+
+chash_key_prop_test(N) -> chash_key_prop_test(N, 64, 6).
+chash_key_prop_test(N, RingSize, Points) ->
+    Fun = fun(K, R) -> tests:chash_add_node(R, K)  end,
+    Ring = lists:foldl(Fun, chash:fresh(RingSize, 1), lists:seq(2, Points)),
+    chash_key_prop_test(proc, N, [], Ring).
+chash_key_prop_test(_, 0, Acc, _)       -> Acc;
+chash_key_prop_test(proc, N, Acc, Ring) ->
+    Key = mijk_session:generate_session_uuid(1),
+    [{_,H}|_] = chash:successors(chash:key_of(Key), Ring),
+    case proplists:get_value(H, Acc, undefined) of
+        undefined -> chash_key_prop_test(proc, N - 1, [{H, 1}] ++ Acc, Ring);
+        Count     -> chash_key_prop_test(proc, N - 1, [{H, Count+1}] ++ proplists:delete(H, Acc), Ring)
+    end.
+
+mcd_ring_test(N) -> mcd_ring_test(N, [{n1, n1, 10}, {n2, n2, 10}, {n3, n3, 10}, {n4, n4, 10}, {n5, n5, 10}, {n6, n6, 10}]).
+mcd_ring_test(N, Ring) ->
+    {ok, Pid} = dht_ring:start_link(Ring),
+    {A1,A2,A3} = now(),
+    random:seed(A1, A2, A3),
+    test("mcd lookup:", fun() -> t_mcd_r_test(Pid, N) end),
+    test("random test:", fun() -> t_mcd_rand(N) end).
+
+t_mcd_rand(0) -> ok;
+t_mcd_rand(N) ->
+    random:uniform(10000000000),
+    t_mcd_rand(N-1).
+
+t_mcd_r_test(_,   0) -> ok;
+t_mcd_r_test(Pid, N) ->
+    dht_ring:lookup(Pid, random:uniform(10000000000)),
+    t_mcd_r_test(Pid, N-1).
+
+%tests:mcd_key_prop_test(10000, [{n1,n1,50}, {n2,n2,50}, {n3,n3,50}, {n4,n4,50}, {n5,n5,50}, {n6,n6,50}, {n7,n7,50},{n8,n8,50},{n9,n9,50},{n10,n10,50}]).
+mcd_key_prop_test(N, Ring)         ->
+    {ok, Pid} = dht_ring:start_link(Ring),
+    mcd_key_prop_test(N, [], Pid). 
+mcd_key_prop_test(0, A, _)   -> A;
+mcd_key_prop_test(N, A, Mcd) ->
+    Key = mijk_session:generate_session_uuid(1),
+    [H|_] = dht_ring:lookup(Mcd, Key),
+    case proplists:get_value(H, A, undefined) of
+        undefined -> mcd_key_prop_test(N - 1, [{H, 1}] ++ A, Mcd);
+        Count     -> mcd_key_prop_test(N - 1, [{H, Count+1}] ++ proplists:delete(H, A), Mcd)
+    end.
+
+chash_ring_handler(RingSize, Points) ->
+    Fun = fun(K, R) -> tests:chash_add_node(R, K)  end,
+    Ring = lists:foldl(Fun, chash:fresh(RingSize, 1), lists:seq(2, Points)),
+    spawn_link(tests, chash_ring_handler_loop, [Ring]).
+
+chash_ring_handler_loop(Ring) ->
+    receive
+        {lookup, Key, Pid} ->
+            Pid ! chash:successors(chash:key_of(Key), Ring),
+            chash_ring_handler_loop(Ring);
+        {get_ring, Pid}    ->
+            Pid ! Ring,
+            chash_ring_handler_loop(Ring);
+        _Other             ->
+            io:format("Unexp message: ~p ~n", [_Other])
+    after 5000 -> chash_ring_handler_loop(Ring)
+    end.
+
+mcache_driver_tests(N) ->
+    test("mcache test :", fun() -> mdtest1(N) end),
+    test("mcd: test   :", fun() -> mdtest2(N) end),
+    test("mcache test :", fun() -> mdtest1(N) end),
+    test("mcd: test   :", fun() -> mdtest2(N) end).
+
+mdtest1(0) -> ok;
+mdtest1(N) ->
+    SSID = mijk_session:generate_session_uuid(1),
+    mcache:set_raw(SSID, 
+        mijk_session:erl_to_mysql([{<<"lalala">>, 1}, {<<"gugugu">>}, 2]), raw, 1200),
+    mcache:get_raw(<<"">>, SSID),
+    mdtest1(N-1).
+
+mdtest2(0) -> ok;
+mdtest2(N) ->
+    SSID = mijk_session:generate_session_uuid(1),
+    mcd:ldo(set, SSID, mijk_session:erl_to_mysql([{<<"lalala">>, 1}, {<<"gugugu">>}, 2]), 0, 1200),
+    mcd:get(SSID),
+    mdtest2(N-1).
+    
