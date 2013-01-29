@@ -11,7 +11,7 @@ get_route(Type, Path) ->
         {'POST', [<<"app">>, <<"user">>, <<"create">>], elli_user_controller, register_app_user},
         {'POST', [<<"auth">>, <<"user">>, <<"create">>], elli_user_controller, register_app_user},
         {'POST', [<<"auth">>, <<"poll">>], elli_user_controller, poll},
-        {'POST', [<<"auth">>, <<"pull">>], elli_user_controller, pull},
+        {'POST', [<<"auth">>, <<"push">>], elli_user_controller, push},
         {'POST', [<<"auth">>, <<"user">>, <<"profile">>], elli_user_controller, register_user},
         {'POST', [<<"auth">>, <<"user">>, <<"get">>], elli_user_controller, register_user},
         {'POST', [<<"auth">>, <<"user">>, <<"set">>], elli_user_controller, register_user},

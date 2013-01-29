@@ -81,14 +81,15 @@ auth_handle('POST', [<<"auth">>, <<"testc">>, <<"testm">>], _Req, SessionData) -
     [_SSID, [CookieHeader], _SessionData] = SessionData,
     {ok, [CookieHeader], <<"auth testc testm">>};
 
-auth_handle(ReqMethod, Path, Req, [_, Cookies, SSData] = SessionData) ->
+auth_handle(ReqMethod, Path, Req, [_, Cookies, _SSData] = SessionData) ->
     lager:debug("AH unknown auth method -> go to dispatch: ~p ~p ~p ~p", [ReqMethod, Path, Req, SessionData]),
     case mijkweb_dispatch:get_route(ReqMethod, Path) of
         {ok, Module, Method} ->
             lager:debug("auth dispatch to ~p ~p", [Module, Method]),
-            case erlang:apply(Module, Method, [Req, SSData]) of
+            case erlang:apply(Module, Method, [Req, SessionData]) of
                 {ok, [], Resp} -> {ok, Cookies, Resp};
                 {ok, He, Resp} -> {ok, He, Resp}
+                ;R when is_binary(R) -> {ok, [], R}
                 ;R ->
                     lager:debug("AH nok resp: ~p", [R]),
                     R

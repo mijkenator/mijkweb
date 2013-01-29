@@ -32,20 +32,27 @@ $ua->timeout(45);
 #$ua->cookie_jar(new HTTP::Cookies(file=>'/tmp/cookies.dat', autosave=>1));
 $ua->cookie_jar({});
 
-my $response = $ua->request(GET 'http://localhost:3030/test/elli/cookie');
-print Data::Dumper::Dumper($response);
+my $login = $ARGV[0] || "applogin2";
+my $password = $ARGV[1] || "apppassword";
+
+print "----------------------------------------------------------------------------\n";
+my $req = POST 'http://localhost:3033/auth',
+             [ request => '{"type":"login", "login":"'.$login.'", "password":"'.$password.'"}'];
+print $ua->request($req)->as_string;
+#print Data::Dumper::Dumper($response);
+
 print "----------------------------------------------------------------------------\n";
 my $mseq = 0;
 while(1){
-    $mseq = poll_func($ua, $mseq)   
+    $mseq = poll_func($ua, $mseq)
 }
 
 
 sub poll_func
 {
     my ($ua, $seq) = @_;
-    my $req = POST 'http://localhost:3030/poll',
-                  [ request => '{"type":"poll","seq":'.$seq.',"channels":["ch1", "ch2"]}'];
+    my $req = POST 'http://localhost:3033/auth/poll',
+                  [ request => '{"type":"poll","seq":'.$seq.'}'];
      
     my $resp = $ua->request($req)->decoded_content;
     print "Resp: $resp \n";

@@ -11,7 +11,8 @@ CREATE TABLE system_user
     is_verified int,
     primary key (id),
     unique key (org_id),
-    unique key (login)
+    unique key (login),
+    key (login, password)
 ) Engine=InnoDB default charset=utf8 comment='for sytem users';
 
 DROP TABLE if exists organization;
@@ -34,5 +35,6 @@ CREATE TABLE app_user
     remote_ip   varchar(50),
     primary key (id),
     key (sysaccid),
-    unique key (login, sysaccid)
+    unique key (login, sysaccid),
+    key (login, password)
 ) Engine=InnoDB default charset=utf8 comment='for app users';

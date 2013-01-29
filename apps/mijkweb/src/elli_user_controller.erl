@@ -50,7 +50,7 @@ register_app_user(ElliReq) ->
                                      {ok, [], mijkweb_response:json_error_response(?UNKNOWN_ERROR)} 
     end.
 
-register_app_user(ElliReq, SessionData) ->
+register_app_user(ElliReq, [_,_,SessionData]) ->
     lager:debug("Register app user: ~p ~p", [ElliReq, SessionData]),
     try
         Request = cowboy_http:urldecode(elli_request:post_arg(<<"request">>, ElliReq, <<"{}">>)),
@@ -131,6 +131,9 @@ poll(ElliReq, [SSID, [_CookieHeader], SessionData]) ->
     long_polling:poll_request(Req, SSID, SessionData).
 
 push(ElliReq, [_SSID, [_CookieHeader], SessionData]) ->
+    lager:debug("EUC PUSH1", []),
     proplists:get_value(<<"logintype">>, SessionData, 0) =:= 2 orelse throw({error, badlogintype, <<"push">>}),
+    lager:debug("EUC PUSH2", []),
     Req = cowboy_http:urldecode(elli_request:post_arg(<<"request">>, ElliReq, <<"{}">>)),
-    long_polling:push_request(Req).
+    lager:debug("EUC PUSH3", []),
+    long_polling:push_request(Req, SessionData).
