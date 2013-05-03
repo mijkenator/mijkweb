@@ -34,7 +34,8 @@ $ua->cookie_jar({});
 
 
 print "----------------------------------------------------------------------------\n";
-my $req = POST 'http://localhost:3033/user/create',
+#my $req = POST 'http://localhost:3033/user/create',
+my $req = POST 'http://localhost/_mijkweb/user/create',
              [ request => '{"type":"createsysuser", "login":"syslogin1", "password":"syspassword", "email":"sysemail"}'];
 print $ua->request($req)->as_string;
 #print Data::Dumper::Dumper($response);

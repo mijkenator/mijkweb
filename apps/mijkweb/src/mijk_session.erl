@@ -35,6 +35,7 @@
             mysql_create_session/1,
             mcache_create_session/1,
             mcd_create_session/1,
+            mcd_delete_session/1,
             mysql_to_erl/1,
             erl_to_mysql/1,
             get_instance/1,
@@ -322,7 +323,12 @@ mcd_update_session(SessionID, SessionData) ->
     lager:debug("MUS1-> ~p ~p ~n", [SessionData, SessionData]),
     mcd:ldo(set, SessionID, erl_to_mysql(SessionData), 0, ?SESSION_AGE),
     ok.
-    
+
+-spec mcd_delete_session(binary()) -> ok.
+mcd_delete_session(SessionID) when is_binary(SessionID) ->
+    lager:debug("MDS -> ~p ", [SessionID]),
+    mcd:ldo(delete, SessionID),
+    ok.
 %
 %
 %

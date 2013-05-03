@@ -41,7 +41,7 @@ start(_StartType, _StartArgs) ->
                 proplists:get_value("database", L, "mijkweb"), utf8)
         ;_              -> exit("No mysql connection config")
     end,
-
+    catch(ex_reloader:start()),
     mijkweb_sup:start_link().
 
 stop(_State) ->

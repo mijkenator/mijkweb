@@ -8,7 +8,8 @@
     cookie_decode/1,
     session_age/0,
     tlist_search/2,
-    is_email/1
+    is_email/1,
+    format_time/1
 ]).
 
 -include("include/consts.hrl").
@@ -53,3 +54,7 @@ tlist_search([_|T], {Type, Path}) -> tlist_search(T, {Type, Path}).
 
 -spec is_email(binary()) -> true|false.
 is_email(_) -> true.
+
+
+format_time({{Y, M, D}, {H, Mi, S}}) ->
+    list_to_binary(lists:flatten(io_lib:format("~b-~2..0b-~2..0b ~2..0b:~2..0b:~2..0b", [Y, M, D, H, Mi, S]))).

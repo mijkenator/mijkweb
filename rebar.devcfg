@@ -2,6 +2,7 @@
 {sub_dirs, [
     "apps/mijkweb",
     "apps/riak_man",
+    "apps/mijk_statist",
     "rel"
     ]}.
 {deps_dir, ["deps"]}.

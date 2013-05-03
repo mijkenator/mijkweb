@@ -1,0 +1,11 @@
+{application, mijk_statist,
+ [
+  {description, "statist & mcache writer"},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib, mcd
+                 ]},
+  {mod, { mijk_statist, []}}
+ ]}.

@@ -35,13 +35,13 @@ $ua->cookie_jar({});
 my $login = $ARGV[0] || "applogin2";
 my $password = $ARGV[1] || "apppassword";
 
-print "----------------------------------------------------------------------------\n";
+print "--------------------------------------------------------------\n";
 my $req = POST 'http://localhost:3033/auth',
              [ request => '{"type":"login", "login":"'.$login.'", "password":"'.$password.'"}'];
 print $ua->request($req)->as_string;
 #print Data::Dumper::Dumper($response);
 
-print "----------------------------------------------------------------------------\n";
+print "-------------------------------------------------------------\n";
 my $mseq = 0;
 while(1){
     $mseq = poll_func($ua, $mseq)
@@ -54,9 +54,10 @@ sub poll_func
     my $req = POST 'http://localhost:3033/auth/poll',
                   [ request => '{"type":"poll","seq":'.$seq.'}'];
      
-    my $resp = $ua->request($req)->decoded_content;
-    print "Resp: $resp \n";
-    print "----------------------------------------------------------------------------\n";
-    return JSON->new->decode($resp)->{"seq"};
+    my $resp = $ua->request($req);
+    #print "Resp: ".$resp->decoded_content." \n";
+    print $resp->as_string;
+    print "-----------------------------------------------------\n";
+    return JSON->new->decode($resp->decoded_content)->{"seq"};
 }
 

@@ -32,7 +32,8 @@ handle('POST', [<<"auth">>], Req) ->
                         {<<"accountid">>, AccountId}]),
                        Response = {[
                             {<<"type">>, Type},
-                            {<<"status">>, <<"ok">>}
+                            {<<"status">>, <<"ok">>},
+                            {<<"ut">>, LoginType}
                        ]},
                        lager:debug("EP: 2-6 ~p ", [Response]),
                        {ok, RespHeaders, mijkweb_response:json_ok_response(Response)}
@@ -49,17 +50,11 @@ handle('POST', [<<"auth">>], Req) ->
                                      {ok, [], mijkweb_response:json_error_response(?UNKNOWN_ERROR)} 
     end;
 
-%handle('POST', [<<"auth">>, <<"push">>], Req) ->
-%    try
-%        [SSID, RespHeaders] = mijkweb_session:session_process(ellimcd, Req),
-%        lager:debug("ElliPush: ~p ~p",[SSID, RespHeaders]),
-%        {ok, RespHeaders,               
-%         long_polling:push_request(cowboy_http:urldecode(elli_request:post_arg(<<"request">>, Req, <<"{}">>)))}
-%    catch
-%        Error:Reason ->
-%            lager:error("elli push error: ~p ~p", [Error, Reason]),
-%            {ok, [], mijkweb_response:json_error_response(?UNKNOWN_ERROR), <<"auth/push">>}
-%    end;
+handle('POST', [<<"logout">>], Req) ->
+    lager:debug("pirogok logout", []),
+    CookieHeader = mijkweb_session:clean_session(ellimcd, Req),
+    lager:debug("pirogok logout cs: ~p", [CookieHeader]),
+    {ok, [CookieHeader], <<"{\"type\":\"logout\",\"status\":\"ok\"}">>};
 
 handle(ReqMethod, [<<"auth">>|_] = Path, Req) ->
     lager:debug("EP: 1", []),
@@ -89,7 +84,8 @@ auth_handle(ReqMethod, Path, Req, [_, Cookies, _SSData] = SessionData) ->
             case erlang:apply(Module, Method, [Req, SessionData]) of
                 {ok, [], Resp} -> {ok, Cookies, Resp};
                 {ok, He, Resp} -> {ok, He, Resp}
-                ;R when is_binary(R) -> {ok, [], R}
+                %;R when is_binary(R) -> {ok, [], R}
+                ;R when is_binary(R) -> {ok, Cookies, R}
                 ;R ->
                     lager:debug("AH nok resp: ~p", [R]),
                     R

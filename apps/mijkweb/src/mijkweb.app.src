@@ -16,7 +16,8 @@
                   mnesia,
                   emysql,
                   dps,
-                  mimetypes
+                  mimetypes,
+                  ex_reloader
                  ]},
   {mod, { mijkweb_app, []}},
   {env, [

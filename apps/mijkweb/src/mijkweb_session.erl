@@ -5,7 +5,8 @@
     session_process/3,
     session_process/4,
     check_auth/2,
-    check_session/1
+    check_session/1,
+    clean_session/2
 ]).
 
 -include("include/consts.hrl").
@@ -120,6 +121,7 @@ check_auth(elli, Req) ->
     end;
 
 check_auth(ellimcd, Req) -> 
+
     [SSID] = mijkweb_utils:plist_values(tests:lt_parse_cookie(
         elli_request:get_header(<<"Cookie">>, Req, [])),
         [{<<"MIJKSSID">>, undefined}]),
@@ -183,3 +185,11 @@ check_session(Session)      ->
         _                 -> {error, <<"unknown error">>}
     end.
 
+clean_session(ellimcd, Req) ->
+    [SSID] = mijkweb_utils:plist_values(tests:lt_parse_cookie(
+        elli_request:get_header(<<"Cookie">>, Req, [])), [{<<"MIJKSSID">>, <<"">>}]),
+    mijk_session:mcd_delete_session(SSID),
+    lager:debug("CS: prepare for CH generation ~p", [SSID]),
+    CH = cowboy_cookies:cookie(<<"MIJKSSID">>, SSID, [{max_age, 0},{path, <<"/">>}]),
+    lager:debug("CS: CH: ~p", [CH]),
+    CH.

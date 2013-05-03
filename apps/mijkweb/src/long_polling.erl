@@ -19,22 +19,31 @@ poll_request(RequestBody, SessionId, SessionData) when is_binary(RequestBody), i
     try jiffy:decode(RequestBody) of
         {PList} when is_list(PList) ->
             lager:debug("LPPR1 ~p ~n", [PList]),
-            SysAccountId = proplists:get_value(<<"loginextra">>, SessionData,  0),
+            SysAccountId = case proplists:get_value(<<"logintype">>, SessionData, 0) of
+                1 -> proplists:get_value(<<"accountid">>, SessionData,  0);
+                2 -> proplists:get_value(<<"loginextra">>, SessionData,  0)
+            end,
+            DefaultChannels = case proplists:get_value(<<"logintype">>, SessionData, 0) of
+                1 -> [list_to_binary(io_lib:format("channel_~p",[SysAccountId]))];
+                2 -> [list_to_binary(io_lib:format("channel_~p",[SysAccountId])),
+                      list_to_binary(io_lib:format("channel_~p_~p", [SysAccountId, 
+                                proplists:get_value(<<"accountid">>, SessionData,  0)]))]
+            end,
             [Type, OldSeq, Channels] = mijkweb_utils:plist_values(PList, 
                 [{<<"type">>, <<"poll">>}, 
                  {<<"seq">>, 0}, 
-                 {<<"channels">>, [list_to_binary(io_lib:format("channel_~p",[SysAccountId]))]}]),
-            %[Type, OldSeq, Channels] = [ proplists:get_value(Ch, PList) 
-            %                             || Ch <- [<<"type">>, <<"seq">>, <<"channels">>]],
+                 {<<"channels">>, DefaultChannels}]),
             lager:debug("LPPR2 ~p ~n", [{Type, OldSeq, Channels}]),
-            Session = dps_session:find_or_create(SessionId, Channels),
-            lager:debug("LPPR3 ~p ~n", [Session]),
-            {ok, Seq, Messages} = dps_session:fetch(Session, OldSeq),
+            _Session = dps_session:find_or_create(SessionId, Channels),
+            %lager:debug("LPPR3 ~p ~n", [Session]),
+            %{ok, Seq, Messages} = dps_session:fetch(Session, OldSeq),
+            {ok, Seq, Messages} = dps:multi_fetch(Channels, OldSeq, 30000),
             lager:debug("LPPR4 ~p ~n", [{Seq, Messages}]),
             Response = {[
                 {<<"type">>, Type},
                 {<<"status">>, <<"ok">>},
                 {<<"seq">>, Seq},
+                {<<"channels">>, Channels},
                 {<<"data">>, {[{<<"messages">>, Messages}]}}
             ]},
             lager:debug("LPPR4-1 ~p ~n", [Response]),
@@ -52,7 +61,10 @@ push_request(RequestBody, SessionData) when is_binary(RequestBody) ->
         {PList} = jiffy:decode(RequestBody),
     lager:debug("LPPUR1-1 ~p", [PList]),
         is_list(PList) orelse throw({error, bad_command}),
-        SysAccountId = proplists:get_value(<<"loginextra">>, SessionData, 0),
+        SysAccountId = case proplists:get_value(<<"logintype">>, SessionData, 0) of
+            1 -> proplists:get_value(<<"accountid">>, SessionData, 0);
+            2 -> proplists:get_value(<<"loginextra">>, SessionData, 0)
+        end,
     lager:debug("LPPUR1-2 ~p", [PList]),
         %[Type, Msg, Channel] = [ proplists:get_value(Ch, PList, undefined) 
         %                         || Ch <- [<<"type">>, <<"message">>, <<"channel">>]],

@@ -14,3 +14,7 @@
 -define(BADSYSACCOUNT  , {14, <<"bad system account id">>}).
 -define(NODEVKEY       , {15, <<"no development key">>}).
 -define(LOGININUSE     , {16, <<"login already in use">>}).
+-define(BADPROFILE     , {17, <<"bad profile">>}).
+-define(UNKNOWNCOMMAND , {18, <<"unknown command">>}).
+-define(NODEVICEID     , {19, <<"bad profile">>}).
+-define(BADDEVICETYPE  , {20, <<"unknown command">>}).

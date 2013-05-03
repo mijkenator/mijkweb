@@ -8,51 +8,51 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +43 apps/mijkweb/src/mijkweb_app.erl
-badd +65 apps/mijkweb/src/elli_pirogok_callback.erl
-badd +2 tsung_ellitest_ns.xml
-badd +2 tsung_test_ns.xml
-badd +1 tsung_ellitest_s_mcd.xml
-badd +57 tsung_nginx_ns.xml
+badd +1 apps/mijkweb/src/mijkweb_app.erl
 badd +1 apps/mijkweb/src/full_session_handler.erl
 badd +10 apps/mijkweb/src/def_handler.erl
 badd +26 apps/mijkweb/src/mcd_session_handler.erl
 badd +12 apps/mijkweb/src/long_polling.erl
 badd +16 rebar.config
-badd +7 apps/mijkweb/src/mijkweb.app.src
+badd +20 apps/mijkweb/src/mijkweb.app.src
 badd +76 deps/dps/src/dps_cowboy_handler.erl
 badd +50 deps/dps/src/dps_session.erl
-badd +14 apps/mijkweb/src/mijkweb_response.erl
-badd +85 apps/mijkweb/src/elli_pirogok.erl
+badd +18 apps/mijkweb/src/mijkweb_response.erl
+badd +29 apps/mijkweb/src/elli_pirogok.erl
 badd +87 apps/mijkweb/src/mijkweb_session.erl
 badd +151 apps/mijkweb/src/mijk_session.erl
 badd +26 apps/mijkweb/src/mijkweb_utils.erl
 badd +15 apps/mijkweb/include/consts.hrl
 badd +4 apps/mijkweb/src/auth_utils.erl
-badd +210 deps/mcd/src/dht_ring.erl
-badd +108 apps/mijkweb/src/tests.erl
-badd +124 apps/mijkweb/src/chash.erl
-badd +1 rel/files/sys.config
-badd +11 apps/mijkweb/src/mijkweb_dispatch.erl
-badd +9 apps/mijkweb/src/elli_user_controller.erl
+badd +228 apps/mijkweb/src/tests.erl
+badd +21 apps/mijkweb/src/mijkweb_dispatch.erl
+badd +119 apps/mijkweb/src/elli_user_controller.erl
 badd +12 apps/mijkweb/include/mijkweb_consts.hrl
-badd +10 apps/mijkweb/src/model_service_user.erl
-badd +36 mysql.sql
-badd +42 test/test_app_registration.pl
+badd +124 apps/mijkweb/src/model_service_user.erl
+badd +30 mysql.sql
+badd +41 test/test_app_registration.pl
+badd +99 test/testall.pl
+badd +60 test/test_poll.pl
+badd +44 test/test_push.pl
+badd +17 apps/mijkweb/src/elli_admin_user_controller.erl
+badd +1 apps/mijkweb/src/elli_admin_grid.erl
+badd +17 apps/mijkweb/src/model_admin_user_grid.erl
+badd +39 apps/mijkweb/src/elli_admin_appuserdetails.erl
+badd +0 todo.txt
 silent! argdel *
-edit apps/mijkweb/src/elli_user_controller.erl
+edit todo.txt
 set splitbelow splitright
 set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
 argglobal
-let s:l = 14 - ((13 * winheight(0) + 18) / 37)
+let s:l = 6 - ((5 * winheight(0) + 18) / 37)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-14
-normal! 037l
+6
+normal! 0
 tabnext 1
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf

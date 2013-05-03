@@ -17,7 +17,6 @@
 #      CREATED: 16.12.2012 18:02:55
 #     REVISION: ---
 #===============================================================================
-
 use strict;
 use warnings;
 use LWP;
@@ -32,14 +31,21 @@ $ua->timeout(45);
 #$ua->cookie_jar(new HTTP::Cookies(file=>'/tmp/cookies.dat', autosave=>1));
 $ua->cookie_jar({});
 
-my $response = $ua->request(GET 'http://localhost:3030/test/elli/cookie');
-print Data::Dumper::Dumper($response);
 print "----------------------------------------------------------------------------\n";
-
-my $message = $ARGV[0] || 'mimimimi';
-
-my $req = POST 'http://localhost:3030/push',
-              [ request => '{"type":"push", "message":"'.$message.'", "channel":"ch1"}'];
- 
+my $req = POST 'http://localhost:3033/auth',
+             [ request => '{"type":"login", "login":"applogin1", "password":"apppassword"}'];
 print $ua->request($req)->as_string;
-print "----------------------------------------------------------------------------\n";
+#print Data::Dumper::Dumper($response);
+
+print "--------------------------------------------------\n";
+my @symbls = 'a'..'z';
+
+while(1){
+    my $message = join('', map {$symbls[int(rand($#symbls))]} (1..50));
+    print $message."\n";
+    my $req = POST 'http://localhost:3033/auth/push',
+                 [ request => '{"type":"push", "message":"'.$message.'"}'];
+    print $ua->request($req)->as_string;
+    print "---------------------------------------------\n";
+    sleep(1);
+}
