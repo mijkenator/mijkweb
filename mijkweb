@@ -38,21 +38,22 @@ badd +17 apps/mijkweb/src/elli_admin_user_controller.erl
 badd +1 apps/mijkweb/src/elli_admin_grid.erl
 badd +17 apps/mijkweb/src/model_admin_user_grid.erl
 badd +39 apps/mijkweb/src/elli_admin_appuserdetails.erl
-badd +0 todo.txt
+badd +20 todo.txt
+badd +0 apps/mijk_statist/src/mijk_statist_worker.erl
 silent! argdel *
-edit todo.txt
+edit apps/mijk_statist/src/mijk_statist_worker.erl
 set splitbelow splitright
 set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
 argglobal
-let s:l = 6 - ((5 * winheight(0) + 18) / 37)
+let s:l = 51 - ((36 * winheight(0) + 18) / 37)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-6
-normal! 0
+51
+normal! 09l
 tabnext 1
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf

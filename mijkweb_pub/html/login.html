@@ -1,0 +1,182 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+
+<!--META-->
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Login Form</title>
+
+<!--STYLESHEETS-->
+<link href="/css/style.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="/css/validationEngine.jquery.css" type="text/css"/>
+<style>
+    div.ablin {
+        padding:5px 5px 5px 15px;
+    }
+    div.ablin a {
+        color: #000000;
+    }
+    div.ablin a:hover {
+        color: #ffffff;   
+    }
+</style>
+
+<!--SCRIPTS-->
+<script type="text/javascript" src="/js/jquery-1.9.0.min.js"></script>
+<script type="text/javascript" src="/js/json2.js"></script>
+<script src="/js/languages/jquery.validationEngine-en.js" type="text/javascript" charset="utf-8"></script>
+<script src="/js/jquery.validationEngine.js" type="text/javascript" charset="utf-8"></script>
+<!--Slider-in icons-->
+<script type="text/javascript">
+var NoCleanInputL = 1;
+var NoCleanInputP = 1;
+var NoCleanInputE = 1;
+var interval = 0;
+$(document).ready(function() {
+    $(".username").focus(function() {
+	    $(".user-icon").css("left","-48px");
+    });
+    $(".username").blur(function() {
+	    $(".user-icon").css("left","0px");
+    });
+    
+    $(".password").focus(function() {
+	    $(".pass-icon").css("left","-48px");
+    });
+    $(".password").blur(function() {
+	    $(".pass-icon").css("left","0px");
+    });
+
+    $("#loginb").click( form_submit );
+    $("#regisb").click( toggle_submit_type );
+    $("#login-form").validationEngine();
+});
+
+function check_l(e){if(NoCleanInputL){ e.value=''; NoCleanInputL=0 }}
+function check_p(e){if(NoCleanInputP){ e.value=''; NoCleanInputP=0 }}
+function check_e(e){if(NoCleanInputE){ e.value=''; NoCleanInputE=0 }}
+
+function b_blink(e){
+    if(interval){clearInterval(interval) }
+    interval = setInterval(function(){
+        e.toggleClass('buttonhover');
+    }, 1000)
+}
+
+
+function toggle_submit_type(){
+    var stype = $("#submit_type").val();
+    var er_m = $("#email");
+    $("#login-form").validationEngine('hide');
+    if(stype == 'login'){
+        er_m.css("display","block");
+        $("#regisb").attr("class", "button");
+        $("#loginb").attr("class", "register");
+        $("#regisb").unbind("click");
+        $("#loginb").unbind("click");
+        $("#submit_type").val("createsysuser");
+        $("#regisb").click( form_submit );
+        $("#loginb").click( toggle_submit_type );
+        $("#email").validationEngine('detach');
+        b_blink($("#regisb"));
+    }else{
+        er_m.css("display","none");
+        $("#regisb").attr("class", "register");
+        $("#loginb").attr("class", "button");
+        $("#regisb").unbind("click");
+        $("#loginb").unbind("click");
+        $("#submit_type").val("login");
+        $("#regisb").click( toggle_submit_type );
+        $("#loginb").click( form_submit );
+        $("#email").validationEngine('attach');
+        b_blink($("#loginb"));
+    }
+}
+
+function form_submit() {
+    var stype = $("#submit_type").val();
+    $.ajax({
+        type: 'POST',
+        url:  stype == 'login'?'/_mijkweb/auth':'/_mijkweb/user/create',
+        beforeSend: function(xhr){
+            $("#username").val()=='Username'?$("#username").val(''):true;
+            $("#password").val()=='Password'?$("#password").val(''):true;
+            if(stype == 'createsysuser'){
+                $("#email").val()=='E-mail'?$("#email").val(''):true;
+            }else{
+                $("#email").validationEngine('detach');
+            }
+            return $("#login-form").validationEngine('validate');
+        },
+        data: "request=" + JSON.stringify({
+                type: stype,
+                login: $("#username").val() || "",
+                password: $("#password").val() || "",
+                email: $("#email").val() || ""
+            }), 
+        success: function(data){
+            var obj = JSON.parse(data);
+            if(obj.status == 'ok'){
+                if(obj.ut == 1){window.location='/admin';}
+                else{stype=='login'?window.location='/user':window.location='/admin'}
+            }else{
+                console.log('LOGIN NOK');
+                var er_m = $("#lr_error_message");
+                er_m.css("display","block");
+                $("#lr_error_message_div").css("display", "block");
+                er_m.fadeOut(6000, function(){
+                    er_m.css("display", "none")
+                    $("#lr_error_message_div").css("display", "block");
+                });
+            }
+        },
+        error: function(data){alert('ERROR!'); console.log(data)}
+    });
+}
+
+
+</script>
+
+</head>
+<body>
+
+<div id="wrapper">
+    <div class="user-icon"></div>
+    <div class="pass-icon"></div>
+<form id="login-form" name="login-form" class="login-form" action="" method="post">
+    <div class="header">
+    <h1>Login Form</h1>
+    <span>Fill out the form below to login to my super awesome imaginary control panel.</span>
+    </div>
+    
+    <div class="content">
+        <input id="username" name="username" type="text" 
+            class="validate[required] input username" value="Username" onfocus="check_l(this)" />
+        <div style="width:188px;height:20px"></div>
+        <input id="password" name="password" type="password" class="validate[required] input password" value="Password" onfocus="check_p(this)" />
+        <div style="width:188px;height:20px"></div>
+        <input id="email" name="email" type="text" 
+                    class="validate[required,custom[email]] input password" 
+                    style="display:none" value="E-mail" onfocus="check_e(this)" />
+        <div style="width:188px;height:20px;"></div>
+        <input id="lr_error_message" name="username" type="text" class="input password err_msg" 
+                                                value="Wrong login or password." style="display:none" disabled/>
+        <div id="lr_error_message_div" style="width:188px;height:20px;display:none"></div>
+    </div>
+    
+    <div class="footer">
+        <input id="loginb" type="button" name="submit" value="Login" class="button" />
+        <input id="regisb" type="button" name="submit" value="Register" class="register" />
+        <input id="submit_type" type="text" value="login" style="display:none" />
+    </div>
+
+</form>
+
+</div>
+
+<div class="gradient"></div>
+
+<div class="ablin" style=""><a href="/">Back to main page</a></div>
+</body>
+</html>

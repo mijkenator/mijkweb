@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+
+<!--META-->
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Login Form</title>
+
+<!--STYLESHEETS-->
+<link href="/css/style.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="/css/validationEngine.jquery.css" type="text/css"/>
+<link rel="stylesheet" type="text/css" media="screen" href="/css/ui.jqgrid.css" />
+<link rel="stylesheet" type="text/css" media="screen" href="/css/ui.multiselect.css" />
+<link rel="stylesheet" type="text/css" media="screen" href="/css/themes/smoothness/jquery-ui.css" />
+<link rel="stylesheet" type="text/css" media="screen" href="/css/themes/smoothness/jquery.ui.theme.css" />
+<link rel="stylesheet" type="text/css" media="screen" href="/css/jquery.ui.dialog-collapse.css" />
+
+<style>
+  .ui-menu { width: 150px; z-index: 5; font-size: 11px} 
+  #fmenu1 {line-height: 1.5 !important}
+  .status_line {display:inline-block;  margin-left: 5px; padding-right:10px; border-right: 1px solid #000;}
+  .toolbar { width:auto; float:right;}
+  .tb_item { background: #bebebe; border-right: 0px; padding-left:10px; cursor:pointer;}
+  .tb_item:hover { background: #7e7e7e; color: #ffffff; padding-left:10px; cursor:pointer;}
+  .ui-dialog {font-size: 11px !important}
+  .ui-dialog-titlebar {padding: .3em .2em !important;}
+  #sortable1, #sortable2 { list-style-type: none; margin: 0; padding: 0 0 2.5em; float: left; margin-right: 10px; }
+  #sortable1 li, #sortable2 li { margin: 0 5px 5px 5px; padding: 5px; font-size: 1.2em; width: 120px; }
+</style>
+
+<!--SCRIPTS-->
+<script type="text/javascript" src="/js/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/js/jquery-ui-1.10.2.custom.min.js"></script>
+<script type="text/javascript" src="/js/jquery.ui.dialog-collapse.js"></script>
+<script type="text/javascript" src="/js/json2.js"></script>
+<script src="/js/languages/jquery.validationEngine-en.js" type="text/javascript" charset="utf-8"></script>
+<script src="/js/jquery.validationEngine.js" type="text/javascript" charset="utf-8"></script>
+<script src="/js/jquery.jqGrid.min.js" type="text/javascript"></script>
+<script src="/js/i18n/grid.locale-en.js" type="text/javascript"></script>
+<script src="/js/admin.js?v=1" type="text/javascript"></script>
+<!-- https://github.com/carhartl/jquery-cookie -->
+<script src="/js/jquery.cookie.js" type="text/javascript"></script>
+
+</head>
+<body>
+
+<div style="width: 1280px; margin-left:auto; margin-right:auto; margin-bottom: 5px">
+    <div style="width: 150px;display:inline-block;">
+        <ul id="menu">
+          <li>
+            <a id="fmenu1" href="#">Menu</a>
+            <ul>
+              <li>
+                <a href="#">Logs</a>
+                <ul>
+                  <li><a href="#" onclick='$("#event_log").dialog("open")' >Event log</a></li>
+                  <li><a href="#" onclick='event_l_win()' id="eventlogger">Event log 1</a></li>
+                  <li><a href="#">Logins log</a></li>
+                  <li><a href="#">lalalal log</a></li>
+                </ul>
+              </li>
+              <li>
+                <a href="#">Utils</a>
+                <ul>
+                  <li><a href="#">Push notification</a></li>
+                  <li><a href="#">lalal</a></li>
+                  <li><a href="#">lalal</a></li>
+                </ul>
+              </li>
+              <li><a href="#" onclick='message_tch_box()'>Message to the channel</a></li>
+              <li><a href="#" onclick='settings_tch_box()'>Channel settings</a></li>
+              <li><a href="#" onclick='admin_logout()'>LogOut</a></li>
+            </ul>
+          </li>
+        </ul>
+    </div>
+    <div class="ui-menu ui-widget ui-widget-content ui-corner-all" 
+         style="float: right;width:1110px; display:inline-block; line-height: 1.5; padding: 4px .4em;">
+        <div class="status_line"  > Online: <span id="stat_mkh_online">10</span> </div>
+        <div class="status_line"  > Registered today: <span id="stat_mkh_reg_today">10</span> </div>
+        <div class="status_line"  > Logins today: <span id="stat_mkh_logins_today">10</span> </div>
+        <div class="status_line"  > Events today: <span id="stat_mkh_events_today">10</span> </div>
+        <div class="status_line"  > Keys using: <span id="stat_mkh_key_using">10</span> </div>
+        <div id="mijktoolbar" class="toolbar"></div>
+    </div>
+</div>
+
+<div style="width: 1280px;margin-left: auto; margin-right: auto;">
+    <div style="float:left">
+        <table id="list2"></table>
+        <div id="pager2"></div>
+    </div>
+
+    <div style="float:right">
+        <table id="list2_d"></table>
+        <div id="pager2_d"></div>
+    </div>
+</div>
+
+<div id="event_log" title="Event log" style="font-size: 11px !important">
+    <p class="event_str"></p>
+</div>
+
+<div id="message_box" title="Send message to the channel" style="font-size: 11px !important">
+<form id="login-form" name="login-form" class="login-form" style="width:400px" action="" method="post">
+    <div class="content">
+        <div style="width:188px;height:10px"></div>
+        To channel:<br><input id="to_f" type="search" class="msg input username" value=""/><input id="to_f_h" type="text" style="display:none" value=""/>       
+        <div style="width:188px;height:20px"></div>
+        Message: <textarea id="message_f" class="msg input username"
+             style="width:300px;height:100px"></textarea>
+        <div style="width:188px;height:20px"></div>
+    </div>
+    <div class="footer">
+        <input id="loginb" type="button" name="submit" value="Send" class="msgb button" />
+    </div>
+</form>
+</div>
+
+<div id="settings_box" title="Select channels for listening" style="font-size: 11px !important">
+<form id="login-form" name="login-form" class="login-form" style="width:400px" action="" method="post">
+<div>
+    <div class="content" style="height:200px;overflow:auto">
+        <div style="display:inline-block;font-weight: bold;padding-left:10px;width:150px;">User's channels</div>
+        <div style="display:inline-block;font-weight: bold;padding-left:10px;">Listening channels</div>
+        <div style="clear:both;height:10px"></div>
+        <ul id="sortable1" class="connectedSortable"></ul>
+        <ul id="sortable2" class="connectedSortable"></ul>
+        <div style="clear:both;height:10px"></div>
+    </div>
+    <div class="footer" style="clear:both">
+        <input id="save_channels" type="button" name="submit" value="Save" class="msgb button" />
+        <div style="width:10px; display:inline-block; float:right; margin: 2px;" class=""> </div>
+        <input id="cancel_channels" type="button" name="submit" value="Cancel" class="msgb button" />
+    </div>
+</div>
+</form>
+</div>
+
+</body>
+</html>

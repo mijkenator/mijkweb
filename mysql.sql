@@ -145,3 +145,43 @@ BEGIN
     select 1 as 'ret';
 END;;
 delimiter ;
+
+
+DROP TABLE if exists sysacc_stat;
+CREATE TABLE sysacc_stat
+(
+    sysaccid    int not null,
+    raw_stat    varchar(65000),
+    primary key (sysaccid)
+) Engine=InnoDB default charset=utf8 comment='sys accs raw stats';
+DROP TABLE if exists sysacc_stat;
+CREATE TABLE sysacc_stat_history
+(
+    sysaccid    int not null,
+    raw_stat    varchar(65000),
+    dtime       timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    primary key (sysaccid)
+) Engine=InnoDB default charset=utf8 comment='sys accs raw stats history table';
+DROP PROCEDURE IF EXISTS sync_sysacc_stat;
+DROP PROCEDURE IF EXISTS sync_sysacc_stat;
+delimiter ;;
+CREATE PROCEDURE sync_sysacc_stats (
+    var_account_id int,
+    var_stat_blob varchar(65000))
+BEGIN
+    replace into sysacc_stat (sysaccid, raw_stat) values (var_account_id, var_stat_blob);
+    SELECT 1 as 'ret';
+END;;
+
+delimiter ;
+DROP PROCEDURE IF EXISTS flush_reset;
+delimiter ;;
+CREATE PROCEDURE flush_reset (
+BEGIN
+    lock tables sysacc_stat write;
+    insert into sysacc_stat_history th (th.sysaccid, th.raw_stat) select tr.sysaccid, tr.raw_stat from sysacc_stat; 
+    delete from sysacc_stat;
+    unlock tables;
+    SELECT 1 as 'ret';
+END;;
+delimiter ;
