@@ -36,6 +36,8 @@ handle('POST', [<<"auth">>], Req) ->
                             {<<"ut">>, LoginType}
                        ]},
                        lager:debug("EP: 2-6 ~p ", [Response]),
+                       mijk_statist:inc_logins_today(if LoginType=:=1->AccountId;true->LoginExtra end, 1),
+                       mijk_statist:inc_events_today(if LoginType=:=1->AccountId;true->LoginExtra end, 1),
                        {ok, RespHeaders, mijkweb_response:json_ok_response(Response)}
             ;_E      ->
                 lager:error("AUCC ~p ~p", [_E, ?AUTH_FAILED]),

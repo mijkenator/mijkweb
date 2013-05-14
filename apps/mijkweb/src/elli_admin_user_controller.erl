@@ -51,18 +51,11 @@ action(<<"channels-list">>,   Json, _ElliReq, [_SSID, [CookieHeader], _SessionDa
     ]},
     lager:debug("CHLIST resp: ~p ", [Response]),
     {ok, [CookieHeader], mijkweb_response:json_ok_response(Response)};
-action(<<"get-admin-stats">>, _Json, _ElliReq, [_SSID, [CookieHeader], _SessionData, _SysAccountID]) ->
-    Ret = [
-        {<<"online">>, 11},
-        {<<"reg_today">>, 11},
-        {<<"logins_today">>, 11},
-        {<<"events_today">>, 11},
-        {<<"key_using">>, 11}
-    ],
+action(<<"get-admin-stats">>, _Json, _ElliReq, [_SSID, [CookieHeader], _SessionData, SysAccountID]) ->
     Response = {[
         {<<"type">>, <<"get-admin-stats">>},
         {<<"status">>, <<"ok">>},
-        {<<"data">>, {Ret}}
+        {<<"data">>, {mijk_statist:get_user_stats_safe(SysAccountID)}}
     ]},
     {ok, [CookieHeader], mijkweb_response:json_ok_response(Response)};
 action(Type, _, _, [_, CH, _]) -> {ok, CH, mijkweb_response:json_error_response(?UNKNOWNCOMMAND, Type)}.

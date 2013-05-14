@@ -18,7 +18,7 @@ init(_Args) ->
 handle_call({get_user_stats, AccountID}, _From, State) ->
     AIDb = list_to_binary(integer_to_list(AccountID)),
     Ret = case mcd:get(<<"sysacc_stat_", AIDb/binary>>) of
-        {ok, B} when is_binary(B) -> {ok, B}
+        {ok, B} when is_binary(B) -> B
         ;_                        -> 
             % get from database, put into memcache
             case emysql:execute(mysqlpool, <<"select raw_stat from sysacc_stat where sysaccid=?">>, [AccountID]) of
