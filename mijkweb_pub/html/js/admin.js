@@ -234,6 +234,11 @@ function add_event_log(EString){
     if(ec > 1000){ $("#event_log p:first").remove(); }
 }
 
+function event_l_cw(){
+    var ev      = $("#event_log"); 
+    ev.empty();
+}
+
 function message_tch_box(){
     $("#message_box").dialog("open");
 }
