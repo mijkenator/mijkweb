@@ -16,7 +16,7 @@
 			</div>
 			<div id="menu">
 				<ul>
-					<li><a href="#">Homepage</a></li>
+					<li><a href="/">Homepage</a></li>
 					<li><a href="/login/">Demo</a></li>
 					<li><a href="#">Links</a></li>
 					<li><a href="#">CV</a></li>

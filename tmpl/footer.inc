@@ -20,6 +20,7 @@
 							<li><a target="_blank" href="https://github.com/mijkenator/mijkweb/blob/master/mysql.sql">
                                          Database structure</a></li>
 							<li><a href="#">Session structure</a></li>
+							<li><a href="/server_online_stats.html">Online statistics</a></li>
 							<li><a href="#">Nginx server configuration</a></li>
 							<li><a href="#">Cache server</a></li>
 							<li><a href="#">CLientside javascript</a></li>

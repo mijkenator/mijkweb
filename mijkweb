@@ -16,21 +16,19 @@ badd +12 apps/mijkweb/src/long_polling.erl
 badd +16 rebar.config
 badd +20 apps/mijkweb/src/mijkweb.app.src
 badd +76 deps/dps/src/dps_cowboy_handler.erl
-badd +50 deps/dps/src/dps_session.erl
+badd +104 deps/dps/src/dps_session.erl
 badd +18 apps/mijkweb/src/mijkweb_response.erl
 badd +29 apps/mijkweb/src/elli_pirogok.erl
 badd +87 apps/mijkweb/src/mijkweb_session.erl
 badd +151 apps/mijkweb/src/mijk_session.erl
 badd +26 apps/mijkweb/src/mijkweb_utils.erl
 badd +15 apps/mijkweb/include/consts.hrl
-badd +4 apps/mijkweb/src/auth_utils.erl
 badd +228 apps/mijkweb/src/tests.erl
 badd +21 apps/mijkweb/src/mijkweb_dispatch.erl
 badd +119 apps/mijkweb/src/elli_user_controller.erl
 badd +12 apps/mijkweb/include/mijkweb_consts.hrl
 badd +124 apps/mijkweb/src/model_service_user.erl
 badd +30 mysql.sql
-badd +41 test/test_app_registration.pl
 badd +99 test/testall.pl
 badd +60 test/test_poll.pl
 badd +44 test/test_push.pl
@@ -39,21 +37,23 @@ badd +1 apps/mijkweb/src/elli_admin_grid.erl
 badd +17 apps/mijkweb/src/model_admin_user_grid.erl
 badd +39 apps/mijkweb/src/elli_admin_appuserdetails.erl
 badd +20 todo.txt
-badd +0 apps/mijk_statist/src/mijk_statist_worker.erl
+badd +65 apps/mijk_statist/src/mijk_statist_worker.erl
+badd +104 apps/mijk_statist/src/mijk_statist.erl
+badd +45 tmpl/server_online_stats.tmpl
 silent! argdel *
-edit apps/mijk_statist/src/mijk_statist_worker.erl
+edit todo.txt
 set splitbelow splitright
 set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
 argglobal
-let s:l = 51 - ((36 * winheight(0) + 18) / 37)
+let s:l = 39 - ((30 * winheight(0) + 18) / 37)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-51
-normal! 09l
+39
+normal! 046l
 tabnext 1
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf

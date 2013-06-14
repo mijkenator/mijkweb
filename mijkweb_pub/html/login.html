@@ -48,6 +48,10 @@ $(document).ready(function() {
 	    $(".pass-icon").css("left","0px");
     });
 
+    $('#password').keypress(function(e){
+        if(e.which == 13){ form_submit() }    
+    });
+
     $("#loginb").click( form_submit );
     $("#regisb").click( toggle_submit_type );
     $("#login-form").validationEngine();

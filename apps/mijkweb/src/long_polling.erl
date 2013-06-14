@@ -44,9 +44,10 @@ poll_request(RequestBody, SessionId, SessionData) when is_binary(RequestBody), i
                 {<<"status">>, <<"ok">>},
                 {<<"seq">>, Seq},
                 {<<"channels">>, Channels},
-                {<<"data">>, {[{<<"messages">>, Messages}]}}
+                {<<"data">>, {[{<<"messages">>, Messages}, 
+                               {<<"online_stats">>, {mijk_statist:get_user_stats_safe(SysAccountId)}}]}}
             ]},
-            lager:debug("LPPR4-1 ~p ~n", [Response]),
+            lager:debug("LPPR4-1 ~p ~p ~n", [SysAccountId, Response]),
             JResp = mijkweb_response:json_ok_response(Response),
             lager:debug("LPPR5 ~p ~n", [JResp]),
             JResp

@@ -79,7 +79,8 @@ auth_handle('POST', [<<"auth">>, <<"testc">>, <<"testm">>], _Req, SessionData) -
     {ok, [CookieHeader], <<"auth testc testm">>};
 
 auth_handle(ReqMethod, Path, Req, [_, Cookies, _SSData] = SessionData) ->
-    lager:debug("AH unknown auth method -> go to dispatch: ~p ~p ~p ~p", [ReqMethod, Path, Req, SessionData]),
+    %lager:debug("AH unknown auth method -> go to dispatch: ~p ~p ~p ~p", [ReqMethod, Path, Req, SessionData]),
+    lager:debug("AH unknown auth method -> go to dispatch: ~p ~p ~p", [ReqMethod, Path, SessionData]),
     case mijkweb_dispatch:get_route(ReqMethod, Path) of
         {ok, Module, Method} ->
             lager:debug("auth dispatch to ~p ~p", [Module, Method]),

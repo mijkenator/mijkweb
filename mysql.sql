@@ -152,36 +152,52 @@ CREATE TABLE sysacc_stat
 (
     sysaccid    int not null,
     raw_stat    varchar(65000),
-    primary key (sysaccid)
+    dtime       timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    primary key (sysaccid),
+    key (dtime)
 ) Engine=InnoDB default charset=utf8 comment='sys accs raw stats';
-DROP TABLE if exists sysacc_stat;
+DROP TABLE if exists sysacc_stat_history;
 CREATE TABLE sysacc_stat_history
 (
     sysaccid    int not null,
     raw_stat    varchar(65000),
     dtime       timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    primary key (sysaccid)
+    primary key (sysaccid),
+    key (dtime)
 ) Engine=InnoDB default charset=utf8 comment='sys accs raw stats history table';
 DROP PROCEDURE IF EXISTS sync_sysacc_stat;
-DROP PROCEDURE IF EXISTS sync_sysacc_stat;
 delimiter ;;
-CREATE PROCEDURE sync_sysacc_stats (
+CREATE PROCEDURE sync_sysacc_stat (
     var_account_id int,
     var_stat_blob varchar(65000))
 BEGIN
-    replace into sysacc_stat (sysaccid, raw_stat) values (var_account_id, var_stat_blob);
+    insert into sysacc_stat_history (sysaccid, raw_stat, dtime) 
+        select sysaccid, raw_stat, dtime from sysacc_stat
+            where DATE(dtime) != DATE(NOW());
+    insert into sysacc_stat (sysaccid, raw_stat) values (var_account_id, var_stat_blob)
+        on duplicate key update raw_stat = var_stat_blob;
     SELECT 1 as 'ret';
 END;;
 
 delimiter ;
 DROP PROCEDURE IF EXISTS flush_reset;
 delimiter ;;
-CREATE PROCEDURE flush_reset (
+CREATE PROCEDURE flush_reset()
 BEGIN
-    lock tables sysacc_stat write;
-    insert into sysacc_stat_history th (th.sysaccid, th.raw_stat) select tr.sysaccid, tr.raw_stat from sysacc_stat; 
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SET autocommit=1;
+        ROLLBACK;
+    END;
+    START TRANSACTION;
+    SET autocommit=0;
+
+    insert into sysacc_stat_history (sysacc_stat_history.sysaccid, sysacc_stat_history.raw_stat) 
+        select sysacc_stat_sysaccid, sysacc_stat.raw_stat from sysacc_stat; 
     delete from sysacc_stat;
-    unlock tables;
+
+    COMMIT;
+    SET autocommit=1;
     SELECT 1 as 'ret';
 END;;
 delimiter ;

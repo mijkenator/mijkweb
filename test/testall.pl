@@ -84,10 +84,10 @@ $ret = `./test_app_registration.pl $dev_guid 2`;
 print "TEST_APP_REG: \n".$ret."\n";
 
 
-#`tmux send-keys -t mijkweb:polling.0 './test_poll.pl applogin1 apppassword' Enter`;
-#`tmux send-keys -t mijkweb:polling.1 './test_poll.pl applogin2 apppassword' Enter`;
-#`tmux send-keys -t mijkweb:polling.2 './test_poll.pl applogin3 apppassword' Enter`;
-#`tmux send-keys -t mijkweb:polling.3 './test_push.pl ' Enter`;
+`tmux send-keys -t mijkweb:polling.0 './test_poll.pl applogin1 apppassword' Enter`;
+`tmux send-keys -t mijkweb:polling.1 './test_poll.pl applogin2 apppassword' Enter`;
+`tmux send-keys -t mijkweb:polling.2 './test_poll.pl applogin3 apppassword' Enter`;
+`tmux send-keys -t mijkweb:polling.3 './test_push.pl ' Enter`;
 
 
 print "-------------------------------------------------------------\n";

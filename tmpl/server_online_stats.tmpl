@@ -1,0 +1,99 @@
+<TMPL_INCLUDE NAME="header.inc">
+<TMPL_INCLUDE NAME="page_start.inc">
+                <div class="post">  
+					<h2 class="title"><a href="#">Server online statistics</a></h2>
+					<div class="entry">
+                        <p>
+                            <ul>
+                                <li>Application <a target="_blank" href="https://github.com/mijkenator/mijkweb/tree/master/apps/mijk_statist/src">mijk_statist</a></li>
+                                <li>Interface</li>
+                                <li>Memcache</li>
+                                <li>Mysql</li>
+                            </ul>
+                        </p>
+                        <p>
+                            All interface functions in mijk_statist module checking is statistic application alive and you can stop, restart application safely. For example for code swapping or applying modified configuration.
+                            <ul class="ul_interface">
+                               <li> 
+                                  <p>wait_list_update(AccountID, StatTerm) -> ok</p> 
+                                  <p>
+                                     AccountID =:= integer(), StatTerm =:= any() (any erlang term)<br>
+                                     Function take account id and term and put it into a workers message queue for update statistcics by term. Always return ok. 
+                                  </p>
+                               </li>
+                               <li> 
+                                  <p>get_user_stats(AccountID) -> {ok, Term} | {error, Reason}</p>
+                                  <p>
+                                     AccountID =:= integer(). <br>
+                                     Function take an account id and return tuple {ok, StatDataTerm} or {error, Reason}. Function check Memcache first, if no data in it - function check mysql table mijkweb.sysacc_stat. If no data onto Memcache but exists data onto mysql, function update Memcache. If no data in Memcahe and mysql - function return default tuple and update Memcache with it 
+                                  </p>
+                               </li>
+                               <li> 
+                                  <p>is_process_alive(ProcessRegisterName) -> true|false</p>
+                                  <p>
+                                    ProcessRegisterName =:= atom() <br>
+                                    Function take process name and check process is alive.
+                                  </p>
+                               </li>
+                               <li> 
+                                  <p>flush_reset()</p>
+                                  <p><Function flush all data from Memcache into MySQL using "call sync_sysacc_stat(AccountID, StatTerm)"</p>
+                               </li>
+                               <li> 
+                                  <p>inc_stat_field(BinaryKey, AccountID), inc_stat_field(BinaryKey, AccountID, Increment)</p>
+                                  <p>
+                                    Increment statistic data by BinaryKey with Increment. For function with 2 argument using default increment 1.   
+                                  </p>
+                               </li>
+                               <li> dec_stat_field/2, dec_stat_field/3,</li>
+                               <li> set_stat_field/3()</li>
+                               <li> get_user_stats_safe()</li>
+                               <li> inc_online_users()</li>
+                               <li> inc_reg_today()</li>
+                               <li> inc_logins_today()</li>
+                               <li> inc_events_today()</li>
+                               <li> inc_key_using()</li>
+                               <li> dec_online_users()</li>
+                               <li> dec_reg_today()</li>
+                               <li> dec_logins_today()</li>
+                               <li> dec_events_today()</li>
+                               <li> dec_key_using()</li>
+                               <li> set_online_users()</li>
+                               <li> set_reg_today()</li>
+                               <li> set_logins_today()</li>
+                               <li> set_events_today()</li>
+                               <li> set_key_using()</li>
+                               <li> get_online_users()</li>
+                               <li> get_online_users()</li>
+                               <li> stat_fields()</li>
+                               <li> get_default_stat_values()</li>
+                               <li> mysql_to_erl()</li>
+                               <li> erl_to_mysql()</li>
+                               <li> update_user_stats()</li>
+                            </ul>
+                        </p>
+                        <p>
+                            <b>get_user_stats</b> Trying to get current statistics from Memcache, if not exists trying to get it 
+                            from mysql table mijkweb.sysacc_stat and put it into Memcache. 
+                        </p>
+                        <p>
+                            <b>Memcache && MySQL syncronization</b>: every 10 minutes by mijk_statist_worker handler {sync}.
+                            <a target="_blank" href="https://github.com/mijkenator/mijkweb/blob/master/apps/mijk_statist/src/mijk_statist_worker.erl">Check this out.</a>
+                        </p>
+                        <p>
+                           Moving data from operative table sysacc_stat to history table sysacc_stat_history. 
+                           <ul>
+                              <li>
+                                 Cron job at the end of the day: `cron_daily_stats.sh stat-flush-reset`. See <a href="#">cron_daily_stats</a> and <a href="#">cron_daily_stats.sh</a>. This script launch mijk_statist:flush_reset/0 function, flushing into sysacc_stat table all unsaved statistic data and call after flush_reset store procedure for sync sysacc_stat and sysacc_stat_history tables. 
+                              </li>
+                              <li>After server restart</li>
+                              <li></li>
+                              <li></li>
+                           </ul>
+                        </p>
+					</div>
+                    <p class="meta"></p>
+					<!--p class="meta"> <span class="posted">Posted by <a href="#">Someone</a> on December 17, 2007</span> <a href="#" class="permalink">Read more</a> <a href="#" class="comments">Comments (18)</a> </p-->
+				</div>
+<TMPL_INCLUDE NAME="content_end.inc">
+<TMPL_INCLUDE NAME="footer.inc">

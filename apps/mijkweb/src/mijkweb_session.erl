@@ -179,8 +179,8 @@ check_session(Session)      ->
             NowTs = mijkweb_utils:now(),
             lager:debug("!MSCS2: ~p", [NowTs]),
             case NowTs - Tstmp > mijkweb_utils:session_age() of
-                true      -> io:format("!!!1~n",[]), {error, <<"session timestamp expired">>};
-                _         -> io:format("!!!2~n",[]), {ok, mijkweb_utils:merge_plists(Session, [{<<"timestamp">>, NowTs}])}
+                true      -> {error, <<"session timestamp expired">>};
+                _         -> {ok, mijkweb_utils:merge_plists(Session, [{<<"timestamp">>, NowTs}])}
             end;
         _                 -> {error, <<"unknown error">>}
     end.

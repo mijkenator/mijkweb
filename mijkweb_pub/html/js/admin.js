@@ -74,6 +74,7 @@ function polling_process(seqN){
             if(obj && (obj.seq || obj.seq == 0)){
                 console.log("Poll OK:", data);
                 add_event_log(data);
+                update_top_stats(obj);
                 polling_process(obj.seq)
             }else{
                 console.log('Unexpect poll result', data)
@@ -419,4 +420,14 @@ function get_stat_mkh(){
 function admin_logout(){
    $.removeCookie("MIJKSSID");
    window.location = '/';    
+}
+
+function update_top_stats(obj){
+    if(obj.data && obj.data.online_stats){
+        $('#stat_mkh_online').text(obj.data.online_stats.online);
+        $('#stat_mkh_reg_today').text(obj.data.online_stats.reg_today);
+        $('#stat_mkh_logins_today').text(obj.data.online_stats.logins_today);
+        $('#stat_mkh_events_today').text(obj.data.online_stats.events_today);
+        $('#stat_mkh_key_using').text(obj.data.online_stats.key_using);
+    }    
 }
