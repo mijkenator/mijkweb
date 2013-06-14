@@ -229,6 +229,7 @@ function add_event_log(EString){
     var evlog   = ev.html();
     var ec      = ev.children().length;
     ev.html(evlog + "\n" + '<p class="event_str">' + PRCounter + " - " + EString  + "</p>");
+    ev.scrollTop(ev.height());
    
     if(ec > 1000){ $("#event_log p:first").remove(); }
 }
@@ -256,6 +257,7 @@ function form_submit() {
         success: function(data){
             var obj = JSON.parse(data);
             if(obj.status == 'ok'){
+                $('#message_f').val('');
             }else{
             }
         },
