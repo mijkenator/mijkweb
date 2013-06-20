@@ -438,3 +438,13 @@ function update_top_stats(obj){
         $('#stat_mkh_key_using').text(obj.data.online_stats.key_using);
     }    
 }
+
+function settings_cert_box(){
+    $("#certificate_box").dialog({ 
+        collapseEnabled: true,
+        autoOpen: false,
+        width:'auto',
+        open: function(event, ui){ $("#certificate_box_tb").remove()},
+        beforeCollapse: function(event, ui){ return move_to_toobox('#certificate_box', 'Certificates'); }
+    });
+}

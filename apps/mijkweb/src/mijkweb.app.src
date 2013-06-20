@@ -17,7 +17,8 @@
                   emysql,
                   dps,
                   mimetypes,
-                  ex_reloader
+                  ex_reloader,
+                  apns
                  ]},
   {mod, { mijkweb_app, []}},
   {env, [
