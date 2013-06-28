@@ -53,6 +53,14 @@ $(document).ready(function() {
                 return false;
             }
     });
+    $("#certificate_box").dialog({ 
+        collapseEnabled: true,
+        autoOpen: false,
+        width:'auto',
+        open: function(event, ui){ $("#certificate_box_tb").remove()},
+        beforeCollapse: function(event, ui){ return move_to_toobox('#certificate_box', 'Certificates'); }
+    });
+    $("#certsave").click( certsave_submit );
     settings_dialog();
     get_stat_mkh();
 });
@@ -440,11 +448,32 @@ function update_top_stats(obj){
 }
 
 function settings_cert_box(){
-    $("#certificate_box").dialog({ 
-        collapseEnabled: true,
-        autoOpen: false,
-        width:'auto',
-        open: function(event, ui){ $("#certificate_box_tb").remove()},
-        beforeCollapse: function(event, ui){ return move_to_toobox('#certificate_box', 'Certificates'); }
+    $("#certificate_box").dialog("open");
+}
+
+function certsave_submit(){
+    var robj = {
+        type: 'certsave',
+        applehost: $("#apple_host").val() || "",
+        cerpwd: $("#cert_pwd").val() || "",
+        cert: $("#cert").val() || "",
+        cert_key: $("#cert_key").val() || "",
+    };
+    $.ajax({
+        type: 'POST',
+        url:  '/_mijkweb/auth/certsave',
+        beforeSend: function(xhr){
+            return $("#certbox-form").validationEngine('validate');
+        },
+        data: "request=" + JSON.stringify(robj), 
+        success: function(data){
+            var obj = JSON.parse(data);
+            if(obj.status == 'ok'){
+                $('#message_f').val('');
+            }else{
+
+            }
+        },
+        error: function(data){alert('ERROR!'); console.log(data)}
     });
 }
